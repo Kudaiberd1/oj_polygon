@@ -5,6 +5,7 @@ import com.polygon.onlinejudge.entities.enums.Language;
 import com.polygon.onlinejudge.entities.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,11 +19,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "problem")
+@Builder
 public class Problem {
     @Id
     @GeneratedValue(generator = "uuid")
     @Column(updatable = false, nullable = false)
-    private long id;
+    private String id;
 
     @Column(name = "title")
     private String title;
@@ -37,10 +39,10 @@ public class Problem {
     private String outputDescription;
 
     @Column(name = "time_limit_ms")
-    private long timeLimitMs;
+    private Long timeLimitMs;
 
     @Column(name = "memory_limit_mb")
-    private long memoryLimitMb;
+    private Long memoryLimitMb;
 
     @Column(name = "allowed_languages")
     @Enumerated(EnumType.STRING)

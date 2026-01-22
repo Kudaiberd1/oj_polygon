@@ -19,7 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProblemResponseDto {
-    private long id;
+    private String id;
     private String title;
     private String description;
     private String inputDescription;
