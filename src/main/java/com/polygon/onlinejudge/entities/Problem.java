@@ -18,8 +18,8 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "problem")
 @Builder
+@Table(name = "problem")
 public class Problem {
     @Id
     @GeneratedValue(generator = "uuid")
