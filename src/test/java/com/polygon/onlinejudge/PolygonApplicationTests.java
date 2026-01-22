@@ -1,4 +1,4 @@
-package com.polygon.demo;
+package com.polygon.onlinejudge;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
