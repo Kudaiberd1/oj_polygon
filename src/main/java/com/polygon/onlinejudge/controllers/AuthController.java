@@ -29,7 +29,7 @@ public class AuthController {
         return ResponseEntity.ok(authResponse);
     }
 
-    @PostMapping(value = "register", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> register(@RequestBody @Valid RegisterRequest registserRequest){
         keycloakService.registerUser(registserRequest);
 
