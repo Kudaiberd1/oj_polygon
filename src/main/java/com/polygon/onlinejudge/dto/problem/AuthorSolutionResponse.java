@@ -5,11 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthorSolutionResponse {
-    private String id;
+    private UUID id;
     private String problemVersionId;
     private Language language;
     private String sourceCode;

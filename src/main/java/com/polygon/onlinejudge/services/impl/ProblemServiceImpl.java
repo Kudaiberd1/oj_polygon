@@ -2,15 +2,23 @@ package com.polygon.onlinejudge.services.impl;
 
 import com.polygon.onlinejudge.dto.problem.ProblemRequest;
 import com.polygon.onlinejudge.dto.problem.ProblemResponse;
+import com.polygon.onlinejudge.dto.problem.ProblemVersionResponse;
 import com.polygon.onlinejudge.entities.Problem;
+import com.polygon.onlinejudge.entities.ProblemVersion;
+import com.polygon.onlinejudge.entities.User;
 import com.polygon.onlinejudge.mappers.ProblemMapper;
+import com.polygon.onlinejudge.mappers.ProblemVersionMapper;
+import com.polygon.onlinejudge.policy.ProblemPolicy;
 import com.polygon.onlinejudge.repositories.ProblemRepository;
+import com.polygon.onlinejudge.repositories.ProblemVersionRepository;
+import com.polygon.onlinejudge.repositories.UserRepository;
 import com.polygon.onlinejudge.services.ProblemService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -19,38 +27,44 @@ public class ProblemServiceImpl implements ProblemService {
 
     private final ProblemRepository problemRepository;
     private final ProblemMapper problemMapper;
+    private final UserRepository userRepository;
+    private final ProblemPolicy problemPolicy;
+    private final ProblemVersionRepository problemVersionRepository;
+    private final ProblemVersionMapper problemVersionMapper;
 
     @Override
-    public List<ProblemResponse> getAllproblems() {
-        List<Problem> problems = problemRepository.findAll();
+    public List<ProblemResponse> getAllproblems(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        List<Problem> problems = problemRepository.findAllByOwnerId(user.getId());
+
         return problems.stream().map(problemMapper::toDto).toList();
     }
 
     @Override
-    public ProblemResponse getById(String id) {
-        Problem problem = problemRepository.findById(id).orElseThrow();
+    public ProblemResponse getById(UUID id, String email) {
+        Problem problem = problemRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Problem with id: " + id + " not found"));
+        problemPolicy.checkIsOwner(problem, email);
 
         return problemMapper.toDto(problem);
     }
 
     @Override
-    public ProblemResponse createProblem(ProblemRequest problem) {
-        Problem newProblem = Problem.builder()
-                .title(problem.getTitle())
-                .ownerId(problem.getOwnerId())
+    public ProblemResponse createProblem(String email, ProblemRequest problemRequest) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Problem problem = Problem.builder()
+                .title(problemRequest.getTitle())
+                .ownerId(user.getId())
                 .build();
 
-        problemRepository.save(newProblem);
-        return problemMapper.toDto(newProblem);
+        return problemMapper.toDto(problemRepository.save(problem));
     }
 
     @Override
-    public void updateProblem(ProblemRequest request, String id) {
-        Problem problem = problemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Problem not found"));
+    public List<ProblemVersionResponse> getProblemVersions(UUID problemId) {
+        List<ProblemVersion> versions = problemVersionRepository.findAllByProblem_Id(problemId).orElseThrow(() -> new IllegalArgumentException("Problem with id: " + problemId + " not found"));
 
-        problemMapper.updateProblem(request, problem);
-
-        problemRepository.save(problem);
+        return versions.stream().map(problemVersionMapper::toDto).toList();
     }
+
 }

@@ -13,5 +13,4 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ProblemRequest {
     private String title;
-    private UUID ownerId;
 }

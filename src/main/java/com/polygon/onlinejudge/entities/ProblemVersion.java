@@ -7,10 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -19,9 +19,9 @@ import java.time.LocalDateTime;
 @Builder
 public class ProblemVersion {
     @Id
-    @GeneratedValue(generator = "uuid")
+    @UuidGenerator
     @Column(updatable = false, nullable = false)
-    private String id;
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "problem_id", nullable = false)

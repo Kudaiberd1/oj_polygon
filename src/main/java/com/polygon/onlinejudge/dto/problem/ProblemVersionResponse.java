@@ -7,16 +7,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class ProblemVersionResponse {
-    private String id;
-    private String problemId;
+    private UUID id;
+    private UUID problemId;
     private int version;
     private Status status;
     private Long timeLimitMs;

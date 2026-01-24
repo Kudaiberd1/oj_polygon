@@ -5,9 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -19,15 +18,12 @@ import java.util.UUID;
 @Table(name = "problem")
 public class Problem {
     @Id
-    @GeneratedValue(generator = "uuid")
+    @UuidGenerator
     @Column(updatable = false, nullable = false)
-    private String id;
+    private UUID id;
 
-    @Column(name = "title")
+    @Column(name = "title", unique = true, nullable = false)
     private String title;
-
-    @Column(name = "problem_versions")
-    private int problem_versions;
 
     @Column(name = "owner_id")
     private UUID ownerId;

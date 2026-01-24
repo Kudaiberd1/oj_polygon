@@ -5,17 +5,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
+
+import java.util.UUID;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-class ProblemStatement {
+public class ProblemStatement {
     @Id
-    @GeneratedValue(generator = "uuid")
+    @UuidGenerator
     @Column(updatable = false, nullable = false)
-    private String id;
+    private UUID id;
 
     @OneToOne
     private ProblemVersion version;

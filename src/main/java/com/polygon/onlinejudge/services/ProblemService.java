@@ -2,16 +2,18 @@ package com.polygon.onlinejudge.services;
 
 import com.polygon.onlinejudge.dto.problem.ProblemRequest;
 import com.polygon.onlinejudge.dto.problem.ProblemResponse;
+import com.polygon.onlinejudge.dto.problem.ProblemVersionResponse;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ProblemService {
 
-    List<ProblemResponse> getAllproblems();
+    List<ProblemResponse> getAllproblems(String email);
 
-    ProblemResponse getById(String id);
+    ProblemResponse getById(UUID id, String email);
 
-    ProblemResponse createProblem(ProblemRequest problem);
+    ProblemResponse createProblem(String email, ProblemRequest problemRequest);
 
-    void updateProblem(ProblemRequest problem, String id);
+    List<ProblemVersionResponse> getProblemVersions(UUID problemId);
 }

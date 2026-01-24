@@ -27,7 +27,12 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/polygon/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/v1/polygon/auth/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/auth/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
