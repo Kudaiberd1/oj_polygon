@@ -16,4 +16,8 @@ public interface ProblemVersionService {
     ProblemStatementResponse updateStatement(UUID versionId, ProblemStatementRequest request);
 
     ProblemStatementResponse getStatement(UUID versionId);
+
+    ProblemVersionResponse updateVersion(UUID versionId, ProblemVersionRequest request);
+
+    void finalizeVersion(UUID versionId);
 }

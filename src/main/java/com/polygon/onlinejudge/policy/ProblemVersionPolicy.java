@@ -24,4 +24,12 @@ public class ProblemVersionPolicy {
             throw new IllegalArgumentException("Latest problem version is not VERIFIED");
         }
     }
+
+    public void checkVersion(ProblemVersion problemVersion){
+
+        if(problemVersion.getStatus() != Status.DRAFT) {
+            throw new IllegalStateException("Problem version with id: " + problemVersion.getId() + " is already verified, you cannot change");
+        }
+
+    }
 }

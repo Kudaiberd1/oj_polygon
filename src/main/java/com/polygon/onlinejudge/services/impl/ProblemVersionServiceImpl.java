@@ -73,9 +73,34 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     }
 
     @Override
-    public ProblemStatementResponse updateStatement(UUID versionId, ProblemStatementRequest request) {
-        ProblemStatement oldProblemStatement = problemStatementRepository.findProblemStatementByVersion_Id(versionId).orElseThrow(() ->  new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
+    public ProblemVersionResponse updateVersion(UUID versionId, ProblemVersionRequest request) {
+        ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
 
+        if(problemVersion.getStatus() != Status.DRAFT) {
+            throw new IllegalStateException("Problem version with id: " + versionId + " is already verified, you cannot change");
+        }
+
+        problemVersionMapper.updateProblem(request, problemVersion);
+        ProblemVersion newVersion = problemVersionRepository.save(problemVersion);
+
+        return problemVersionMapper.toDto(newVersion);
+    }
+
+    @Override
+    public void finalizeVersion(UUID versionId) {
+        ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
+        problemVersionPolicy.checkVersion(problemVersion);
+
+        problemVersion.setStatus(Status.VERIFIED);
+        problemVersionRepository.save(problemVersion);
+    }
+
+    @Override
+    public ProblemStatementResponse updateStatement(UUID versionId, ProblemStatementRequest request) {
+        ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
+        problemVersionPolicy.checkVersion(problemVersion);
+
+        ProblemStatement oldProblemStatement = problemStatementRepository.findProblemStatementByVersion_Id(versionId).orElseThrow(() ->  new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
         oldProblemStatement.setDescription(request.getDescription());
         oldProblemStatement.setInputDescription(request.getInputDescription());
         oldProblemStatement.setOutputDescription(request.getOutputDescription());
@@ -90,4 +115,5 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         ProblemStatement oldProblemStatement = problemStatementRepository.findProblemStatementByVersion_Id(versionId).orElseThrow(() ->  new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
         return problemStatementMapper.toDto(oldProblemStatement);
     }
+
 }

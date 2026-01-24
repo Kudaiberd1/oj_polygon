@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -32,6 +33,13 @@ public class ProblemVersionController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/versions/{versionId}")
+    public ResponseEntity<ProblemVersionResponse> updateVersion(@PathVariable UUID versionId, @RequestBody ProblemVersionRequest request) {
+        ProblemVersionResponse response = problemVersionService.updateVersion(versionId, request);
+
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/versions/{versionId}/statement")
     public ResponseEntity<ProblemStatementResponse> updateStatement(@PathVariable UUID versionId, @RequestBody ProblemStatementRequest request) {
         ProblemStatementResponse response = problemVersionService.updateStatement(versionId, request);
@@ -44,5 +52,12 @@ public class ProblemVersionController {
         ProblemStatementResponse response = problemVersionService.getStatement(versionId);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/versions/{versionId}/finalize")
+    public ResponseEntity<Map<String, String>> finalizeVersion(@PathVariable UUID versionId) {
+        problemVersionService.finalizeVersion(versionId);
+
+        return ResponseEntity.ok(Map.of("message", "Version has been finalized"));
     }
 }
