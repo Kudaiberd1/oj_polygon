@@ -1,17 +1,17 @@
 package com.polygon.onlinejudge.services;
 
-import com.polygon.onlinejudge.dto.problem.ProblemRequestDto;
-import com.polygon.onlinejudge.dto.problem.ProblemResponseDto;
+import com.polygon.onlinejudge.dto.problem.ProblemRequest;
+import com.polygon.onlinejudge.dto.problem.ProblemResponse;
 
 import java.util.List;
 
 public interface ProblemService {
 
-    List<ProblemResponseDto> getAllproblems();
+    List<ProblemResponse> getAllproblems();
 
-    ProblemResponseDto getById(String id);
+    ProblemResponse getById(String id);
 
-    ProblemResponseDto createProblem(ProblemRequestDto problem);
+    ProblemResponse createProblem(ProblemRequest problem);
 
-    void updateProblem(ProblemRequestDto problem, String id);
+    void updateProblem(ProblemRequest problem, String id);
 }

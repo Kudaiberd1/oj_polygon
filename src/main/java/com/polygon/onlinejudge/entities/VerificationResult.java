@@ -5,38 +5,30 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "problem")
-public class Problem {
+class VerificationResult {
     @Id
     @GeneratedValue(generator = "uuid")
     @Column(updatable = false, nullable = false)
     private String id;
 
-    @Column(name = "title")
-    private String title;
+    @OneToOne
+    private ProblemVersion version;
 
-    @Column(name = "problem_versions")
-    private int problem_versions;
-
-    @Column(name = "owner_id")
-    private UUID ownerId;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private boolean passed;
+    private String log;
+    private LocalDateTime verifiedAt;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.verifiedAt = LocalDateTime.now();
     }
 }

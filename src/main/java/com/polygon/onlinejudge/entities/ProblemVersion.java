@@ -1,5 +1,7 @@
 package com.polygon.onlinejudge.entities;
 
+import com.polygon.onlinejudge.entities.enums.ContestType;
+import com.polygon.onlinejudge.entities.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,28 +11,32 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "problem")
-public class Problem {
+public class ProblemVersion {
     @Id
     @GeneratedValue(generator = "uuid")
     @Column(updatable = false, nullable = false)
     private String id;
 
-    @Column(name = "title")
-    private String title;
+    @ManyToOne
+    @JoinColumn(name = "problem_id", nullable = false)
+    private Problem problem;
 
-    @Column(name = "problem_versions")
-    private int problem_versions;
+    private int version;
 
-    @Column(name = "owner_id")
-    private UUID ownerId;
+    @Enumerated(value = EnumType.STRING)
+    private Status status;
+
+    private Long timeLimitMs;
+    private Long memoryLimitMb;
+
+    @Enumerated(EnumType.STRING)
+    private ContestType scoringType;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

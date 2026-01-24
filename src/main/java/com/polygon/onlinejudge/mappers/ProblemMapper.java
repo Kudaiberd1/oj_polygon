@@ -1,7 +1,7 @@
 package com.polygon.onlinejudge.mappers;
 
-import com.polygon.onlinejudge.dto.problem.ProblemRequestDto;
-import com.polygon.onlinejudge.dto.problem.ProblemResponseDto;
+import com.polygon.onlinejudge.dto.problem.ProblemRequest;
+import com.polygon.onlinejudge.dto.problem.ProblemResponse;
 import com.polygon.onlinejudge.entities.Problem;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -11,8 +11,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = "spring")
 public interface ProblemMapper {
 
-    ProblemResponseDto toDto(Problem problem);
+    ProblemResponse toDto(Problem problem);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateProblem(ProblemRequestDto dto, @MappingTarget Problem problem);
+    void updateProblem(ProblemRequest dto, @MappingTarget Problem problem);
 }

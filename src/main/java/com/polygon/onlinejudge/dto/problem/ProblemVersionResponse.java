@@ -1,7 +1,6 @@
 package com.polygon.onlinejudge.dto.problem;
 
 import com.polygon.onlinejudge.entities.enums.ContestType;
-import com.polygon.onlinejudge.entities.enums.Language;
 import com.polygon.onlinejudge.entities.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,22 +8,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProblemRequestDto {
-
-    private String title;
-    private String description;
-    private String inputDescription;
-    private String outputDescription;
+@Builder
+public class ProblemVersionResponse {
+    private String id;
+    private String problemId;
+    private int version;
+    private Status status;
     private Long timeLimitMs;
     private Long memoryLimitMb;
-    private Language allowedLanguages;
     private ContestType scoringType;
-    private UUID ownerId;
-    private Status status;
+    private LocalDateTime createdAt;
 }
