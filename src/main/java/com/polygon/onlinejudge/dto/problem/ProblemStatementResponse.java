@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ProblemStatementResponse {
     private UUID id;
-    private String problemVersionId;
+    private UUID problemVersionId;
     private String description;
     private String inputDescription;
     private String outputDescription;

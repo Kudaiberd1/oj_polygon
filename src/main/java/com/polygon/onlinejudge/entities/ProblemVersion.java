@@ -1,12 +1,10 @@
 package com.polygon.onlinejudge.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.polygon.onlinejudge.entities.enums.ContestType;
 import com.polygon.onlinejudge.entities.enums.Status;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
@@ -37,6 +35,10 @@ public class ProblemVersion {
 
     @Enumerated(EnumType.STRING)
     private ContestType scoringType;
+
+    @OneToOne
+    @JoinColumn(nullable = true)
+    private ProblemStatement problemStatement;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

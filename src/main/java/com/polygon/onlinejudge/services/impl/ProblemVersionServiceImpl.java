@@ -60,15 +60,17 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         ProblemStatement problemStatement = ProblemStatement.builder()
                 .version(newProblemVersion)
                 .build();
-        problemStatementRepository.save(problemStatement);
+        problemStatement = problemStatementRepository.save(problemStatement);
 
-        return problemVersionMapper.toDto(problemVersion);
+        newProblemVersion.setProblemStatement(problemStatement);
+        problemVersionRepository.save(newProblemVersion);
+
+        return problemVersionMapper.toDto(newProblemVersion);
     }
 
     @Override
     public ProblemVersionResponse getVersion(UUID versionId) {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
-
         return problemVersionMapper.toDto(problemVersion);
     }
 
@@ -106,6 +108,9 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         oldProblemStatement.setOutputDescription(request.getOutputDescription());
         oldProblemStatement.setNotes(request.getNotes());
         ProblemStatement updatedProblemStatement = problemStatementRepository.save(oldProblemStatement);
+
+        problemVersion.setProblemStatement(updatedProblemStatement);
+        problemVersionRepository.save(problemVersion);
 
         return problemStatementMapper.toDto(updatedProblemStatement);
     }

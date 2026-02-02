@@ -19,6 +19,7 @@ public class ProblemVersionResponse {
     private UUID problemId;
     private int version;
     private Status status;
+    private ProblemStatementResponse statement;
     private Long timeLimitMs;
     private Long memoryLimitMb;
     private ContestType scoringType;
