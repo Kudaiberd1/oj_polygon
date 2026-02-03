@@ -2,6 +2,7 @@ package com.polygon.onlinejudge.repositories;
 
 import com.polygon.onlinejudge.entities.Problem;
 import com.polygon.onlinejudge.entities.ProblemVersion;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -14,5 +15,6 @@ public interface ProblemVersionRepository extends JpaRepository<ProblemVersion, 
 
     int countByProblem(Problem problem);
 
+    @EntityGraph(attributePaths = {"problem", "problemStatement"})
     List<ProblemVersion> findAllByProblem_Id(UUID problemId);
 }

@@ -37,6 +37,7 @@ public class ProblemServiceImpl implements ProblemService {
     private final UserContext userContext;
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ProblemResponse> getAllProblems(String email, PaginationParams paginationParams) {
         User user = userContext.getUser(email);
         return problemRepository.findAllByOwnerId(user.getId(), paginationParams.toPageable())
@@ -44,6 +45,7 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProblemResponse getById(UUID id, String email) {
         Problem problem = problemRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Problem with id: " + id + " not found"));
         problemPolicy.checkIsOwner(problem, email);
@@ -64,6 +66,7 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProblemVersionResponse> getProblemVersions(UUID problemId) {
         List<ProblemVersion> versions = problemVersionRepository.findAllByProblem_Id(problemId);
 

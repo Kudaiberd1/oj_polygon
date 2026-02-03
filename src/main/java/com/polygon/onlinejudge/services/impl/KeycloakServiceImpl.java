@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -104,7 +105,7 @@ public class KeycloakServiceImpl implements KeycloakService {
 
         try {
             ResponseEntity<Void> response = restTemplate.postForEntity(
-                    keycloakUrl+"/admin/realms/online_judge/users",
+                    String.format("%s/admin/realms/online_judge/users", keycloakUrl),
                     entity,
                     Void.class
             );
@@ -217,11 +218,12 @@ public class KeycloakServiceImpl implements KeycloakService {
                 new HttpEntity<>(body, headers);
 
         restTemplate.put(
-                keycloakUrl+"/admin/realms/online_judge/users/" + userId + "/reset-password",
+                String.format("%s/admin/realms/online_judge/users/%s/reset-password", keycloakUrl, userId),
                 request
         );
     }
 
+    @Cacheable(value = "adminToken", unless = "#result == null")
     public String getAdminToken(){
 
         String url = buildTokenEndpoint("token");
@@ -248,15 +250,14 @@ public class KeycloakServiceImpl implements KeycloakService {
 
         HttpEntity<Void> request = new HttpEntity<>(headers);
 
-        String deleteUrl = keycloakUrl+"/admin/realms/online_judge/users/"+userId;
+        String deleteUrl = String.format("%s/admin/realms/online_judge/users/%s", keycloakUrl, userId);
 
         restTemplate.exchange(deleteUrl, HttpMethod.DELETE, request, Void.class);
     }
 
 
     public String buildTokenEndpoint(String endpointType){
-        String base = keycloakUri;
-        return base + "/protocol/openid-connect/" + endpointType;
+        return String.format("%s/protocol/openid-connect/%s", keycloakUri, endpointType);
     }
 
     public AuthResponse mapTokenResponse(KeycloakTokenResponse tokenResponse) {
