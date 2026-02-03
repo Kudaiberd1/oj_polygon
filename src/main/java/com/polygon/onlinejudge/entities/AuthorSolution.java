@@ -28,6 +28,7 @@ class AuthorSolution {
     private Language language;
 
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     @Column(columnDefinition = "TEXT", nullable = false)
     private String sourceCode;
 }
