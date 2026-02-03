@@ -32,6 +32,8 @@ public class KeycloakServiceImpl implements KeycloakService {
     private final UserRepository userRepository;
 
     @Value("${spring.application.jwt.keycloak.url}")
+    private String keycloakUri;
+    @Value("spring.application.keycloak.url")
     private String keycloakUrl;
     @Value("${spring.application.jwt.keycloak.client-id}")
     private String clientId;
@@ -102,7 +104,7 @@ public class KeycloakServiceImpl implements KeycloakService {
 
         try {
             ResponseEntity<Void> response = restTemplate.postForEntity(
-                    "http://localhost:8080/admin/realms/online_judge/users",
+                    keycloakUrl+"/admin/realms/online_judge/users",
                     entity,
                     Void.class
             );
@@ -246,14 +248,14 @@ public class KeycloakServiceImpl implements KeycloakService {
 
         HttpEntity<Void> request = new HttpEntity<>(headers);
 
-        String deleteUrl = "http://localhost:8080/admin/realms/online_judge/users/"+userId;
+        String deleteUrl = keycloakUrl+"/admin/realms/online_judge/users/"+userId;
 
         restTemplate.exchange(deleteUrl, HttpMethod.DELETE, request, Void.class);
     }
 
 
     public String buildTokenEndpoint(String endpointType){
-        String base = keycloakUrl;
+        String base = keycloakUri;
         return base + "/protocol/openid-connect/" + endpointType;
     }
 
