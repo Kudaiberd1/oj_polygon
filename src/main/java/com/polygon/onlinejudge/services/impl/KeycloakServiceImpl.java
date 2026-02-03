@@ -16,20 +16,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
 public class KeycloakServiceImpl implements KeycloakService {
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -119,9 +115,9 @@ public class KeycloakServiceImpl implements KeycloakService {
                 try {
                     setPassword(userId, request.getPassword(), adminToken);
 
-                    User new_user = new User();
-                    new_user.setEmail(request.getEmail());
-                    userRepository.save(new_user);
+                    User newUser = new User();
+                    newUser.setEmail(request.getEmail());
+                    userRepository.save(newUser);
                 } catch (DataAccessException dbEx) {
                     log.error("DB save failed after Keycloak user creation. Rolling back Keycloak userId={}", userId, dbEx);
                     try {

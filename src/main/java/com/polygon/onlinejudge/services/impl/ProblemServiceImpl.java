@@ -1,5 +1,6 @@
 package com.polygon.onlinejudge.services.impl;
 
+import com.polygon.onlinejudge.context.UserContext;
 import com.polygon.onlinejudge.dto.problem.ProblemRequest;
 import com.polygon.onlinejudge.dto.problem.ProblemResponse;
 import com.polygon.onlinejudge.dto.problem.ProblemVersionResponse;
@@ -11,7 +12,6 @@ import com.polygon.onlinejudge.mappers.ProblemVersionMapper;
 import com.polygon.onlinejudge.policy.ProblemPolicy;
 import com.polygon.onlinejudge.repositories.ProblemRepository;
 import com.polygon.onlinejudge.repositories.ProblemVersionRepository;
-import com.polygon.onlinejudge.repositories.UserRepository;
 import com.polygon.onlinejudge.services.ProblemService;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +29,14 @@ public class ProblemServiceImpl implements ProblemService {
 
     private final ProblemRepository problemRepository;
     private final ProblemMapper problemMapper;
-    private final UserRepository userRepository;
     private final ProblemPolicy problemPolicy;
     private final ProblemVersionRepository problemVersionRepository;
     private final ProblemVersionMapper problemVersionMapper;
+    private final UserContext userContext;
 
     @Override
-    public List<ProblemResponse> getAllproblems(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public List<ProblemResponse> getAllProblems(String email) {
+        User user = userContext.getUser(email);
         List<Problem> problems = problemRepository.findAllByOwnerId(user.getId());
 
         return problems.stream().map(problemMapper::toDto).toList();
@@ -52,7 +52,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public ProblemResponse createProblem(String email, ProblemRequest problemRequest) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User user = userContext.getUser(email);
 
         Problem problem = Problem.builder()
                 .title(problemRequest.getTitle())
@@ -64,7 +64,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public List<ProblemVersionResponse> getProblemVersions(UUID problemId) {
-        List<ProblemVersion> versions = problemVersionRepository.findAllByProblem_Id(problemId).orElseThrow(() -> new IllegalArgumentException("Problem with id: " + problemId + " not found"));
+        List<ProblemVersion> versions = problemVersionRepository.findAllByProblem_Id(problemId);
 
         return versions.stream().map(problemVersionMapper::toDto).toList();
     }

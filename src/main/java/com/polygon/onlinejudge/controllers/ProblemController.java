@@ -27,7 +27,7 @@ public class ProblemController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        return ResponseEntity.ok(problemService.getAllproblems(email));
+        return ResponseEntity.ok(problemService.getAllProblems(email));
     }
 
     @GetMapping("/{id}")

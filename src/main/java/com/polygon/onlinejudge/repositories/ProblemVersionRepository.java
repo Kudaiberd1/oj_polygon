@@ -14,5 +14,5 @@ public interface ProblemVersionRepository extends JpaRepository<ProblemVersion, 
 
     int countByProblem(Problem problem);
 
-    Optional<List<ProblemVersion>> findAllByProblem_Id(UUID problemId);
+    List<ProblemVersion> findAllByProblem_Id(UUID problemId);
 }

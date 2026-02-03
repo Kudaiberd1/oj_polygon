@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface ProblemService {
 
-    List<ProblemResponse> getAllproblems(String email);
+    List<ProblemResponse> getAllProblems(String email);
 
     ProblemResponse getById(UUID id, String email);
 
