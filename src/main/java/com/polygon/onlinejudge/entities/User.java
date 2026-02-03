@@ -26,11 +26,6 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
-    private String firstName;
-    @Column(nullable = false)
-    private String lastName;
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

@@ -10,7 +10,6 @@ public interface ProblemVersionMapper {
 
     @Mapping(target = "problemId", source = "problemVersion.problem.id")
     @Mapping(target = "statement.id", source = "problemVersion.problemStatement.id")
-    @Mapping(target = "statement.problemVersionId", source = "problemVersion.id")
     @Mapping(target = "statement.description", source = "problemVersion.problemStatement.description")
     @Mapping(target = "statement.inputDescription", source = "problemVersion.problemStatement.inputDescription")
     @Mapping(target = "statement.outputDescription", source = "problemVersion.problemStatement.outputDescription")

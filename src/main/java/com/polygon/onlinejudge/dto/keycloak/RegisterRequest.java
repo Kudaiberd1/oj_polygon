@@ -14,14 +14,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RegisterRequest {
 
-    @NotBlank()
-    @Email
+    @NotBlank() @Email
     private String email;
 
     @NotBlank(message = "{validation.auth.password.required}")
     @Size(max = 255, message = "{validation.auth.password.size}")
     private String password;
-
-    private String firstName;
-    private String lastName;
 }

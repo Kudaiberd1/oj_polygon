@@ -13,6 +13,7 @@ import com.polygon.onlinejudge.repositories.ProblemRepository;
 import com.polygon.onlinejudge.repositories.ProblemVersionRepository;
 import com.polygon.onlinejudge.repositories.UserRepository;
 import com.polygon.onlinejudge.services.ProblemService;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class ProblemServiceImpl implements ProblemService {
 
     private final ProblemRepository problemRepository;

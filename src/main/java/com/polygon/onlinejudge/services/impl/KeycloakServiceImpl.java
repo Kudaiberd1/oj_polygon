@@ -13,12 +13,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
 import java.util.UUID;
@@ -26,6 +29,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class KeycloakServiceImpl implements KeycloakService {
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -92,8 +96,8 @@ public class KeycloakServiceImpl implements KeycloakService {
         Map<String, Object> user = Map.of(
                 "username", request.getEmail(),
                 "email", request.getEmail(),
-                "firstName", request.getFirstName(),
-                "lastName", request.getLastName(),
+                "firstName", request.getEmail(),
+                "lastName", request.getEmail(),
                 "enabled", true
         );
 
@@ -108,17 +112,33 @@ public class KeycloakServiceImpl implements KeycloakService {
             );
             if (response.getStatusCode().is2xxSuccessful()) {
 
-                User new_user = new User();
-                new_user.setEmail(request.getEmail());
-                new_user.setFirstName(request.getFirstName());
-                new_user.setLastName(request.getLastName());
-
-                userRepository.save(new_user);
 
                 String location = response.getHeaders().getLocation().toString();
                 String userId = location.substring(location.lastIndexOf("/") + 1);
 
-                setPassword(userId, request.getPassword(), adminToken);
+                try {
+                    setPassword(userId, request.getPassword(), adminToken);
+
+                    User new_user = new User();
+                    new_user.setEmail(request.getEmail());
+                    userRepository.save(new_user);
+                } catch (DataAccessException dbEx) {
+                    log.error("DB save failed after Keycloak user creation. Rolling back Keycloak userId={}", userId, dbEx);
+                    try {
+                        deleteKeycloakUser(userId, adminToken);
+                    } catch (Exception rollbackEx) {
+                        log.error("Failed to rollback Keycloak userId={} (zombie risk). Manual cleanup may be needed.", userId, rollbackEx);
+                    }
+                    throw dbEx;
+                } catch (Exception ex) {
+                    log.error("Registration failed after Keycloak user creation. Rolling back Keycloak userId={}", userId, ex);
+                    try {
+                        deleteKeycloakUser(userId, adminToken);
+                    } catch (Exception rollbackEx) {
+                        log.error("Failed to rollback Keycloak userId={} (zombie risk). Manual cleanup may be needed.", userId, rollbackEx);
+                    }
+                    throw ex;
+                }
             }else{
                 throw new BadRequestException("Unexpected error during registration");
             }
@@ -223,6 +243,18 @@ public class KeycloakServiceImpl implements KeycloakService {
 
         return (String) response.getBody().get("access_token");
     }
+
+    public void deleteKeycloakUser(String userId, String adminToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(adminToken);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        String deleteUrl = "http://localhost:8080/admin/realms/online_judge/users/"+userId;
+
+        restTemplate.exchange(deleteUrl, HttpMethod.DELETE, request, Void.class);
+    }
+
 
     public String buildTokenEndpoint(String endpointType){
         String base = keycloakUrl;
