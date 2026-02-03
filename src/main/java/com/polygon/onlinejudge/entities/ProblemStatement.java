@@ -24,7 +24,7 @@ public class ProblemStatement {
     private UUID id;
 
     @OneToOne
-    @JoinColumn(name = "version_id")
+    @JoinColumn(name = "version_id", nullable = false, unique = true)
     private ProblemVersion version;
 
     @Lob
