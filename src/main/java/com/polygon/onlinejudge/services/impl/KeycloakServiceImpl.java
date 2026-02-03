@@ -33,7 +33,7 @@ public class KeycloakServiceImpl implements KeycloakService {
 
     @Value("${spring.application.jwt.keycloak.url}")
     private String keycloakUri;
-    @Value("spring.application.keycloak.url")
+    @Value("${spring.application.keycloak.url}")
     private String keycloakUrl;
     @Value("${spring.application.jwt.keycloak.client-id}")
     private String clientId;
@@ -217,7 +217,7 @@ public class KeycloakServiceImpl implements KeycloakService {
                 new HttpEntity<>(body, headers);
 
         restTemplate.put(
-                "http://localhost:8080/admin/realms/online_judge/users/" + userId + "/reset-password",
+                keycloakUrl+"/admin/realms/online_judge/users/" + userId + "/reset-password",
                 request
         );
     }
