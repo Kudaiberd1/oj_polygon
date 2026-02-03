@@ -111,9 +111,6 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         oldProblemStatement.setNotes(request.getNotes());
         ProblemStatement updatedProblemStatement = problemStatementRepository.save(oldProblemStatement);
 
-        problemVersion.setProblemStatement(updatedProblemStatement);
-        problemVersionRepository.save(problemVersion);
-
         return problemStatementMapper.toDto(updatedProblemStatement);
     }
 

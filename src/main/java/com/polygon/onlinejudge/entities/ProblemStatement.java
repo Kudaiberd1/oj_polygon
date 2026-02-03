@@ -14,6 +14,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(indexes = {
+    @Index(name = "idx_problem_statement_version_id", columnList = "version_id")
+})
 public class ProblemStatement {
     @Id
     @UuidGenerator
@@ -21,6 +24,7 @@ public class ProblemStatement {
     private UUID id;
 
     @OneToOne
+    @JoinColumn(name = "version_id")
     private ProblemVersion version;
 
     private String description;

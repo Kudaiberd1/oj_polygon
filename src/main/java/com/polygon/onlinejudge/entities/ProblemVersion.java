@@ -15,6 +15,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(indexes = {
+    @Index(name = "idx_problem_version_problem_id", columnList = "problem_id"),
+    @Index(name = "idx_problem_version_status", columnList = "status")
+})
 public class ProblemVersion {
     @Id
     @UuidGenerator
