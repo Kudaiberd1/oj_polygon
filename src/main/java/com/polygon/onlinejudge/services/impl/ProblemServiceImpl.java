@@ -1,6 +1,7 @@
 package com.polygon.onlinejudge.services.impl;
 
 import com.polygon.onlinejudge.context.UserContext;
+import com.polygon.onlinejudge.dto.pagination.PaginationParams;
 import com.polygon.onlinejudge.dto.problem.ProblemRequest;
 import com.polygon.onlinejudge.dto.problem.ProblemResponse;
 import com.polygon.onlinejudge.dto.problem.ProblemVersionResponse;
@@ -13,6 +14,7 @@ import com.polygon.onlinejudge.policy.ProblemPolicy;
 import com.polygon.onlinejudge.repositories.ProblemRepository;
 import com.polygon.onlinejudge.repositories.ProblemVersionRepository;
 import com.polygon.onlinejudge.services.ProblemService;
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,11 +37,10 @@ public class ProblemServiceImpl implements ProblemService {
     private final UserContext userContext;
 
     @Override
-    public List<ProblemResponse> getAllProblems(String email) {
+    public Page<ProblemResponse> getAllProblems(String email, PaginationParams paginationParams) {
         User user = userContext.getUser(email);
-        List<Problem> problems = problemRepository.findAllByOwnerId(user.getId());
-
-        return problems.stream().map(problemMapper::toDto).toList();
+        return problemRepository.findAllByOwnerId(user.getId(), paginationParams.toPageable())
+                .map(problemMapper::toDto);
     }
 
     @Override

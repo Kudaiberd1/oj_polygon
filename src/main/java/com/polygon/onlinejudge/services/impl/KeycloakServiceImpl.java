@@ -28,7 +28,7 @@ import java.util.Map;
 @Slf4j
 public class KeycloakServiceImpl implements KeycloakService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final UserRepository userRepository;
 
     @Value("${spring.application.jwt.keycloak.url}")
