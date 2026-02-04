@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
         log.error("Unexpected error occurred", ex);
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "Unexpected server error"
+                ex.getMessage()
         );
     }
 

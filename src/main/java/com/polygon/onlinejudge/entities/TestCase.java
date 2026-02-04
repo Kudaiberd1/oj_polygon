@@ -14,11 +14,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-class TestCase {
+public class TestCase {
     @Id
-    @UuidGenerator
     @Column(updatable = false, nullable = false)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "test_group_id", nullable = false)

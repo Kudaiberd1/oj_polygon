@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -14,5 +15,6 @@ import java.util.UUID;
 public class TestGroupResponse {
     private UUID id;
     private String problemVersionId;
+    private List<TestCaseResponse> tests;
     private int points;
 }

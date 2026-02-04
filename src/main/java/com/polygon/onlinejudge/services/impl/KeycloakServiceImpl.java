@@ -31,9 +31,9 @@ public class KeycloakServiceImpl implements KeycloakService {
     private final RestTemplate restTemplate;
     private final UserRepository userRepository;
 
-    @Value("${spring.application.jwt.keycloak.url}")
+    @Value("${spring.application.jwt.keycloak.uri}")
     private String keycloakUri;
-    @Value("${spring.application.keycloak.url}")
+    @Value("${spring.application.jwt.keycloak.url}")
     private String keycloakUrl;
     @Value("${spring.application.jwt.keycloak.client-id}")
     private String clientId;

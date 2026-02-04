@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -14,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-class TestGroup {
+public class TestGroup {
     @Id
     @UuidGenerator
     @Column(updatable = false, nullable = false)
@@ -23,6 +24,9 @@ class TestGroup {
     @ManyToOne
     @JoinColumn(name = "problem_version_id", nullable = false)
     private ProblemVersion version;
+
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<TestCase> tests;
 
     private int points;
 }
