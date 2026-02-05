@@ -24,6 +24,8 @@ public class TestCase {
     @JoinColumn(name = "test_group_id", nullable = false)
     private TestGroup group;
 
+    private Long orderId;
+
     private String inputPath;
     private String outputPath;
 }

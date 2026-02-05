@@ -1,14 +1,13 @@
 package com.polygon.onlinejudge.controllers;
 
+import com.polygon.onlinejudge.dto.test.TestCaseRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupResponse;
 import com.polygon.onlinejudge.services.ProblemTestService;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,16 +33,15 @@ public class ProblemTestController {
     }
 
     @PostMapping(
-            value = "/{testGroupId}/tests",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+            value = "/{testGroupId}/tests"
     )
     public ResponseEntity<Void> uploadTestCase(
             @PathVariable UUID testGroupId,
-            @RequestPart("input") MultipartFile inputFile
-    ) {
+            @RequestBody TestCaseRequest testCase
+            ) {
         problemTestService.createTestCase(
                 testGroupId,
-                inputFile
+                testCase
         );
         return ResponseEntity.ok().build();
     }

@@ -1,10 +1,12 @@
 package com.polygon.onlinejudge.services.impl;
 
+import com.polygon.onlinejudge.dto.test.TestCaseRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupResponse;
 import com.polygon.onlinejudge.entities.ProblemVersion;
 import com.polygon.onlinejudge.entities.TestCase;
 import com.polygon.onlinejudge.entities.TestGroup;
+import com.polygon.onlinejudge.entities.enums.Status;
 import com.polygon.onlinejudge.mappers.TestGroupMapper;
 import com.polygon.onlinejudge.repositories.ProblemVersionRepository;
 import com.polygon.onlinejudge.repositories.TestCaseRepository;
@@ -50,18 +52,39 @@ public class ProblemTestServiceImpl implements ProblemTestService {
     }
 
     @Override
-    public void createTestCase(UUID testGroupId, MultipartFile inputFile) {
-        TestGroup testGroup = testGroupRepository.findById(testGroupId).orElseThrow(() -> new IllegalArgumentException("TestGroup not found"));
+    public void createTestCase(UUID testGroupId, TestCaseRequest req) {
+        TestGroup group = testGroupRepository.findById(testGroupId)
+                .orElseThrow(() -> new IllegalArgumentException("TestGroup not found"));
 
-        String inputPath = s3Service.uploadAndGetAddress(inputFile);
+        if (group.getVersion().getStatus() != Status.DRAFT) {
+            throw new IllegalStateException("Cannot add tests to non-DRAFT version");
+        }
 
-        TestCase testCase = TestCase.builder()
-                .group(testGroup)
-                .inputPath(inputPath)
+        if (req.getInputPath() == null || req.getInputPath().isBlank()) {
+            throw new IllegalArgumentException("Input is empty");
+        }
+
+        int nextOrder = testCaseRepository.countTestCasesByGroup_Id(group.getId());
+
+        String baseKey = String.format(
+                "polygon/%03d",
+                nextOrder
+        );
+
+        String inputKey = baseKey + ".in";
+
+        String url = s3Service.putText(inputKey, req.getInputPath());
+
+        TestCase tc = TestCase.builder()
+                .group(group)
+                .orderId(Long.valueOf(nextOrder))
+                .inputPath(url)
                 .build();
 
-        testCaseRepository.save(testCase);
+        testCaseRepository.save(tc);
     }
+
+
 
     @Override
     public void deleteTest(UUID testGroupId, Long id) {

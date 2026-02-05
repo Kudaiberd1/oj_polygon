@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface TestCaseRepository extends JpaRepository<TestCase, Long> {
     Optional<TestCase> findByGroup_IdAndId(UUID groupId, Long id);
+
+    int countTestCasesByGroup_Id(UUID groupId);
 }

@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class TestCaseResponse {
     private Long id;
+    private Long orderId;
     private String inputPath;
     private String outputPath;
 }
