@@ -1,20 +1,26 @@
 package com.polygon.onlinejudge.services.impl;
 
-import com.polygon.onlinejudge.dto.problem.ProblemStatementRequest;
-import com.polygon.onlinejudge.dto.problem.ProblemStatementResponse;
-import com.polygon.onlinejudge.dto.problem.ProblemVersionRequest;
-import com.polygon.onlinejudge.dto.problem.ProblemVersionResponse;
+import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
+import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
+import com.polygon.onlinejudge.entities.AuthorSolution;
 import com.polygon.onlinejudge.entities.Problem;
 import com.polygon.onlinejudge.entities.ProblemStatement;
 import com.polygon.onlinejudge.entities.ProblemVersion;
 import com.polygon.onlinejudge.entities.enums.Status;
+import com.polygon.onlinejudge.mappers.AuthorSolutionMapper;
 import com.polygon.onlinejudge.mappers.ProblemStatementMapper;
 import com.polygon.onlinejudge.mappers.ProblemVersionMapper;
 import com.polygon.onlinejudge.policy.ProblemVersionPolicy;
+import com.polygon.onlinejudge.repositories.AuthorSolutionRepository;
 import com.polygon.onlinejudge.repositories.ProblemRepository;
 import com.polygon.onlinejudge.repositories.ProblemStatementRepository;
 import com.polygon.onlinejudge.repositories.ProblemVersionRepository;
 import com.polygon.onlinejudge.services.ProblemVersionService;
+import com.polygon.onlinejudge.services.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,6 +40,9 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     private final ProblemVersionMapper problemVersionMapper;
     private final ProblemStatementRepository problemStatementRepository;
     private final ProblemStatementMapper problemStatementMapper;
+    private final AuthorSolutionRepository authorSolutionRepository;
+    private final AuthorSolutionMapper authorSolutionMapper;
+    private final S3Service s3Service;
 
     @Override
     public ProblemVersionResponse createVersion(UUID problemId, ProblemVersionRequest request) {
@@ -97,6 +106,45 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
 
         problemVersion.setStatus(Status.VERIFIED);
         problemVersionRepository.save(problemVersion);
+    }
+
+    @Override
+    public AuthorSolutionResponse addAuthorSolution(UUID versionId, AuthorSolutionRequest request) {
+        ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
+
+        if (problemVersion.getStatus() != Status.DRAFT) {
+            throw new IllegalStateException("Cannot add tests to non-DRAFT version");
+        }
+
+        if (request.getSourceCode() == null || request.getSourceCode().isBlank()) {
+            throw new IllegalArgumentException("Input is empty");
+        }
+
+        UUID uuid = UUID.randomUUID();
+        String ext = switch (request.getLanguage()) {
+            case JAVA -> "java";
+            case CPP -> "cpp";
+            case PY -> "py";
+        };
+
+        String key = String.format(
+                "polygon/versions/%s/solutions/author/%s",
+                versionId,
+                uuid
+        );
+
+        String inputKey = key + ("."+ext);
+
+        String url = s3Service.putText(inputKey, request.getSourceCode());
+
+        AuthorSolution solution = AuthorSolution.builder()
+                .version(problemVersion)
+                .language(request.getLanguage())
+                .sourceCode(url)
+                .build();
+
+        authorSolutionRepository.save(solution);
+        return authorSolutionMapper.toDto(solution);
     }
 
     @Override

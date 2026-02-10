@@ -1,4 +1,4 @@
-package com.polygon.onlinejudge.dto.problem;
+package com.polygon.onlinejudge.dto.problemVersion;
 
 import com.polygon.onlinejudge.entities.enums.ContestType;
 import lombok.AllArgsConstructor;

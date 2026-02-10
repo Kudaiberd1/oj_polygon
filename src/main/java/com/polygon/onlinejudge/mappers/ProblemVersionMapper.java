@@ -1,7 +1,7 @@
 package com.polygon.onlinejudge.mappers;
 
-import com.polygon.onlinejudge.dto.problem.ProblemVersionRequest;
-import com.polygon.onlinejudge.dto.problem.ProblemVersionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
 import com.polygon.onlinejudge.entities.ProblemVersion;
 import org.mapstruct.*;
 

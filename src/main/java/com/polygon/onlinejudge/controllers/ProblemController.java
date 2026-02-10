@@ -4,7 +4,7 @@ import com.polygon.onlinejudge.dto.pagination.PaginatedResponse;
 import com.polygon.onlinejudge.dto.pagination.PaginationParams;
 import com.polygon.onlinejudge.dto.problem.ProblemRequest;
 import com.polygon.onlinejudge.dto.problem.ProblemResponse;
-import com.polygon.onlinejudge.dto.problem.ProblemVersionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
 import com.polygon.onlinejudge.services.ProblemService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

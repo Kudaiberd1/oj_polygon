@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-class AuthorSolution {
+public class AuthorSolution {
     @Id
     @UuidGenerator
     @Column(updatable = false, nullable = false)

@@ -1,9 +1,11 @@
 package com.polygon.onlinejudge.controllers;
 
-import com.polygon.onlinejudge.dto.problem.ProblemStatementRequest;
-import com.polygon.onlinejudge.dto.problem.ProblemStatementResponse;
-import com.polygon.onlinejudge.dto.problem.ProblemVersionRequest;
-import com.polygon.onlinejudge.dto.problem.ProblemVersionResponse;
+import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
+import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
 import com.polygon.onlinejudge.services.ProblemVersionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -59,5 +61,11 @@ public class ProblemVersionController {
         problemVersionService.finalizeVersion(versionId);
 
         return ResponseEntity.ok(Map.of("message", "Version has been finalized"));
+    }
+
+    @PostMapping("/versions/{versionId}/solution")
+    public ResponseEntity<AuthorSolutionResponse> addAuthorSolution(@PathVariable UUID versionId, @RequestBody AuthorSolutionRequest request) {
+        AuthorSolutionResponse response = problemVersionService.addAuthorSolution(versionId, request);
+        return ResponseEntity.ok(response);
     }
 }

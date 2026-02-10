@@ -43,7 +43,7 @@ public class ProblemTestController {
                 testGroupId,
                 testCase
         );
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.SC_CREATED).build();
     }
 
     @DeleteMapping("/{testGroupId}/tests")

@@ -3,7 +3,7 @@ package com.polygon.onlinejudge.services;
 import com.polygon.onlinejudge.dto.pagination.PaginationParams;
 import com.polygon.onlinejudge.dto.problem.ProblemRequest;
 import com.polygon.onlinejudge.dto.problem.ProblemResponse;
-import com.polygon.onlinejudge.dto.problem.ProblemVersionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

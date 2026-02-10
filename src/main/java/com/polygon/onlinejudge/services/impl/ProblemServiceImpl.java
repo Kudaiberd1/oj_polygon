@@ -4,7 +4,7 @@ import com.polygon.onlinejudge.context.UserContext;
 import com.polygon.onlinejudge.dto.pagination.PaginationParams;
 import com.polygon.onlinejudge.dto.problem.ProblemRequest;
 import com.polygon.onlinejudge.dto.problem.ProblemResponse;
-import com.polygon.onlinejudge.dto.problem.ProblemVersionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
 import com.polygon.onlinejudge.entities.Problem;
 import com.polygon.onlinejudge.entities.ProblemVersion;
 import com.polygon.onlinejudge.entities.User;
