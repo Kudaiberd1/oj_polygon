@@ -120,6 +120,10 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
             throw new IllegalArgumentException("Input is empty");
         }
 
+        if(problemVersion.getAuthorSolution() != null){
+            throw new IllegalStateException("Already has an author solution, you cannot add another one");
+        }
+
         UUID uuid = UUID.randomUUID();
         String ext = switch (request.getLanguage()) {
             case JAVA -> "java";
@@ -145,6 +149,48 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
 
         authorSolutionRepository.save(solution);
         return authorSolutionMapper.toDto(solution);
+    }
+
+    @Override
+    public AuthorSolutionResponse getAuthorSolution(UUID versionId) {
+        AuthorSolution solution = authorSolutionRepository.findByVersion_Id(versionId).orElseThrow(() -> new IllegalArgumentException("Author solution not found"));
+
+        return authorSolutionMapper.toDto(solution);
+    }
+
+    @Override
+    public void updateAuthorSolution(UUID versionId, AuthorSolutionRequest request) {
+        AuthorSolution solution = authorSolutionRepository.findByVersion_Id(versionId).orElseThrow(() -> new IllegalArgumentException("Author solution not found"));
+
+         if (solution.getVersion().getStatus() != Status.DRAFT) {
+            throw new IllegalStateException("Cannot update author solution of non-DRAFT version");
+         }
+
+        if (request.getSourceCode() == null || request.getSourceCode().isBlank()) {
+            throw new IllegalArgumentException("Input is empty");
+        }
+
+        UUID uuid = UUID.randomUUID();
+        String ext = switch (request.getLanguage()) {
+            case JAVA -> "java";
+            case CPP -> "cpp";
+            case PY -> "py";
+        };
+
+        String key = String.format(
+                "polygon/versions/%s/solutions/author/%s",
+                versionId,
+                uuid
+        );
+
+        String inputKey = key + ("."+ext);
+
+        String url = s3Service.putText(inputKey, request.getSourceCode());
+
+        solution.setLanguage(request.getLanguage());
+        solution.setSourceCode(url);
+
+        authorSolutionRepository.save(solution);
     }
 
     @Override

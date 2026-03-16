@@ -40,6 +40,10 @@ public class ProblemVersion {
     @JoinColumn(nullable = true)
     private ProblemStatement problemStatement;
 
+    @OneToOne
+    @JoinColumn(nullable = true)
+    private AuthorSolution authorSolution;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

@@ -21,7 +21,7 @@ public class AuthorSolution {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "problem_version_id", nullable = false)
     private ProblemVersion version;
 

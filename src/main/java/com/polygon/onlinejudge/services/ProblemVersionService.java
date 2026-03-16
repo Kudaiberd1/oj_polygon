@@ -24,4 +24,8 @@ public interface ProblemVersionService {
     void finalizeVersion(UUID versionId);
 
     AuthorSolutionResponse addAuthorSolution(UUID versionId, AuthorSolutionRequest request);
+
+    AuthorSolutionResponse getAuthorSolution(UUID versionId);
+
+    void updateAuthorSolution(UUID versionId, AuthorSolutionRequest request);
 }

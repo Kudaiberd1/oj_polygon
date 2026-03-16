@@ -68,4 +68,16 @@ public class ProblemVersionController {
         AuthorSolutionResponse response = problemVersionService.addAuthorSolution(versionId, request);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/versions/{versionId}/solution")
+    public ResponseEntity<AuthorSolutionResponse> getAuthorSolution(@PathVariable UUID versionId) {
+        AuthorSolutionResponse response = problemVersionService.getAuthorSolution(versionId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/versions/{versionId}/solution")
+    public ResponseEntity<AuthorSolutionResponse> updateAuthorSolution(@PathVariable UUID versionId, @RequestBody AuthorSolutionRequest request) {
+        problemVersionService.updateAuthorSolution(versionId, request);
+        return ResponseEntity.ok().build();
+    }
 }
