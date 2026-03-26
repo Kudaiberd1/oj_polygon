@@ -51,4 +51,10 @@ public class ProblemTestController {
         problemTestService.deleteTest(testGroupId, id);
         return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
     }
+
+    @DeleteMapping("/{testGroupId}")
+    public ResponseEntity<Void> deleteTestGroup(@PathVariable UUID testGroupId) {
+        problemTestService.deleteTestGroup(testGroupId);
+        return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
+    }
 }
