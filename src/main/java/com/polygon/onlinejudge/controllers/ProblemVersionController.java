@@ -1,5 +1,6 @@
 package com.polygon.onlinejudge.controllers;
 
+import com.polygon.onlinejudge.dto.judge.Judge0SubmissionResponse;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
@@ -79,5 +80,10 @@ public class ProblemVersionController {
     public ResponseEntity<AuthorSolutionResponse> updateAuthorSolution(@PathVariable UUID versionId, @RequestBody AuthorSolutionRequest request) {
         problemVersionService.updateAuthorSolution(versionId, request);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/test-code/{solutionId}")
+    public ResponseEntity<Judge0SubmissionResponse> testCode(@PathVariable UUID solutionId, @RequestParam String test) {
+        return ResponseEntity.ok(problemVersionService.testCode(solutionId, test));
     }
 }

@@ -1,5 +1,6 @@
 package com.polygon.onlinejudge.services;
 
+import com.polygon.onlinejudge.dto.judge.Judge0SubmissionResponse;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
@@ -7,6 +8,7 @@ import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
 import com.polygon.onlinejudge.entities.ProblemVersion;
+import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -29,4 +31,6 @@ public interface ProblemVersionService {
     AuthorSolutionResponse getAuthorSolution(UUID versionId);
 
     void updateAuthorSolution(UUID versionId, AuthorSolutionRequest request);
+
+    Judge0SubmissionResponse testCode(UUID solutionId, String test);
 }

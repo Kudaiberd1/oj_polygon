@@ -133,8 +133,6 @@ public class ValidationServiceImpl implements ValidationService {
 
                 Judge0SubmissionResponse response = judge0ClientService.runSubmission(request);
 
-                log.info(response.toString());
-
                 Logs logg = Logs.builder()
                         .version(problemVersion)
                         .status(response.getStatus() != null ? response.getStatus().getDescription() : "Unknown")

@@ -1,5 +1,7 @@
 package com.polygon.onlinejudge.services.impl;
 
+import com.polygon.onlinejudge.dto.judge.Judge0SubmissionRequest;
+import com.polygon.onlinejudge.dto.judge.Judge0SubmissionResponse;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
@@ -13,6 +15,7 @@ import com.polygon.onlinejudge.mappers.ProblemStatementMapper;
 import com.polygon.onlinejudge.mappers.ProblemVersionMapper;
 import com.polygon.onlinejudge.policy.ProblemVersionPolicy;
 import com.polygon.onlinejudge.repositories.*;
+import com.polygon.onlinejudge.services.Judge0ClientService;
 import com.polygon.onlinejudge.services.ProblemVersionService;
 import com.polygon.onlinejudge.services.S3Service;
 import com.polygon.onlinejudge.services.ValidationService;
@@ -23,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -44,6 +46,7 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     private final ValidationService validationService;
     private final TestGroupRepository testGroupRepository;
     private final TestCaseRepository testCaseRepository;
+    private final Judge0ClientService judge0ClientService;
 
     @Override
     public ProblemVersionResponse createVersion(UUID problemId, ProblemVersionRequest request) {
@@ -294,5 +297,28 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         }
 
         return newVersion;
+    }
+
+
+    @Override
+    public Judge0SubmissionResponse testCode(UUID solutionId, String test) {
+        AuthorSolution solutionCode = authorSolutionRepository.findById(solutionId).orElseThrow(() -> new IllegalArgumentException("Solution code not found"));
+
+        int languageId = switch (solutionCode.getLanguage()) {
+            case JAVA -> 62;
+            case CPP -> 54;
+            case PY -> 71;
+        };
+        String sourceCode = s3Service.getInput(solutionCode.getSourceCode());
+
+        Judge0SubmissionRequest request = Judge0SubmissionRequest.builder()
+                .source_code(sourceCode)
+                .stdin(test)
+                .language_id(languageId)
+                .build();
+
+        Judge0SubmissionResponse response = judge0ClientService.runSubmission(request);
+
+        return response;
     }
 }
