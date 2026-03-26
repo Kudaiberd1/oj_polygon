@@ -15,17 +15,21 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-class VerificationResult {
+public class Logs {
     @Id
     @UuidGenerator
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "problem_version_id", nullable = false)
     private ProblemVersion version;
 
-    private boolean passed;
+    private String status;
     private String log;
+    private String message;
+    private String time;
+    private Long memory;
     private LocalDateTime verifiedAt;
 
     @PrePersist

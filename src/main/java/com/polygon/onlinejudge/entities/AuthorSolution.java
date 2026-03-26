@@ -1,5 +1,6 @@
 package com.polygon.onlinejudge.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.polygon.onlinejudge.entities.enums.Language;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,12 +23,12 @@ public class AuthorSolution {
     private UUID id;
 
     @OneToOne
+    @JsonBackReference
     @JoinColumn(name = "problem_version_id", nullable = false)
     private ProblemVersion version;
 
     private Language language;
 
-    @Lob
     @Column(columnDefinition = "TEXT", nullable = false)
     private String sourceCode;
 }

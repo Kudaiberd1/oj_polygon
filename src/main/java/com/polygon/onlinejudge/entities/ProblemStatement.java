@@ -1,5 +1,6 @@
 package com.polygon.onlinejudge.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class ProblemStatement {
     private UUID id;
 
     @OneToOne
+    @JsonBackReference
     private ProblemVersion version;
 
     private String description;

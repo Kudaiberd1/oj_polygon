@@ -53,6 +53,11 @@ dependencies {
     implementation(platform("software.amazon.awssdk:bom:2.25.0"))
     implementation("software.amazon.awssdk:s3")
     implementation("software.amazon.awssdk:apache-client")
+
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.mockito:mockito-core")
 }
 
 tasks.withType<Test> {

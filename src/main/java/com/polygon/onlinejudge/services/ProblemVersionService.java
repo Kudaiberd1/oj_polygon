@@ -6,6 +6,7 @@ import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
+import com.polygon.onlinejudge.entities.ProblemVersion;
 
 import java.util.UUID;
 

@@ -5,6 +5,7 @@ import com.polygon.onlinejudge.dto.test.TestGroupRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupResponse;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface ProblemTestService {
@@ -16,4 +17,6 @@ public interface ProblemTestService {
     void createTestCase(UUID testGroupId, TestCaseRequest req);
 
     void deleteTest(UUID testGroupId, Long id);
+
+    void deleteTestGroup(UUID testGroupId);
 }

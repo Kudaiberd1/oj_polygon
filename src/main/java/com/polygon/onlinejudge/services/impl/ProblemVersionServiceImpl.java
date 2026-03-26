@@ -6,26 +6,24 @@ import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
-import com.polygon.onlinejudge.entities.AuthorSolution;
-import com.polygon.onlinejudge.entities.Problem;
-import com.polygon.onlinejudge.entities.ProblemStatement;
-import com.polygon.onlinejudge.entities.ProblemVersion;
+import com.polygon.onlinejudge.entities.*;
 import com.polygon.onlinejudge.entities.enums.Status;
 import com.polygon.onlinejudge.mappers.AuthorSolutionMapper;
 import com.polygon.onlinejudge.mappers.ProblemStatementMapper;
 import com.polygon.onlinejudge.mappers.ProblemVersionMapper;
 import com.polygon.onlinejudge.policy.ProblemVersionPolicy;
-import com.polygon.onlinejudge.repositories.AuthorSolutionRepository;
-import com.polygon.onlinejudge.repositories.ProblemRepository;
-import com.polygon.onlinejudge.repositories.ProblemStatementRepository;
-import com.polygon.onlinejudge.repositories.ProblemVersionRepository;
+import com.polygon.onlinejudge.repositories.*;
 import com.polygon.onlinejudge.services.ProblemVersionService;
 import com.polygon.onlinejudge.services.S3Service;
+import com.polygon.onlinejudge.services.ValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -43,16 +41,21 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     private final AuthorSolutionRepository authorSolutionRepository;
     private final AuthorSolutionMapper authorSolutionMapper;
     private final S3Service s3Service;
+    private final ValidationService validationService;
+    private final TestGroupRepository testGroupRepository;
+    private final TestCaseRepository testCaseRepository;
 
     @Override
     public ProblemVersionResponse createVersion(UUID problemId, ProblemVersionRequest request) {
         problemVersionPolicy.requireLatestVersionVerified(problemId);
         Problem problem = problemRepository.findById(problemId).orElseThrow(() -> new IllegalArgumentException("Problem with id: " + problemId + " not found"));
-        int version = problemVersionRepository.countByProblem(problem);
+        var version = problemVersionRepository.findLastVersion(problemId);
+        int v = 0;
+        if(version != null) v = version.getVersion();
 
         ProblemVersion problemVersion = ProblemVersion.builder()
                 .problem(problem)
-                .version(version+1)
+                .version(v+1)
                 .status(Status.DRAFT)
                 .timeLimitMs(
                         request.getTimeLimitMs() != null
@@ -88,9 +91,9 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     @Override
     public ProblemVersionResponse updateVersion(UUID versionId, ProblemVersionRequest request) {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
-
-        if(problemVersion.getStatus() != Status.DRAFT) {
-            throw new IllegalStateException("Problem version with id: " + versionId + " is already verified, you cannot change");
+        if(problemVersionPolicy.checkVersion(problemVersion)){
+            ProblemVersion newVersion = copyVersion(problemVersion);
+            return updateVersion(newVersion.getId(), request);
         }
 
         problemVersionMapper.updateProblem(request, problemVersion);
@@ -102,7 +105,12 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     @Override
     public void finalizeVersion(UUID versionId) {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
-        problemVersionPolicy.checkVersion(problemVersion);
+        if(problemVersion.getStatus() != Status.DRAFT){
+            throw new IllegalStateException("Only DRAFT version can be finalized");
+        }
+
+        validationService.verifyVersion(problemVersion);
+        validationService.verifyAuthorSolution(problemVersion);
 
         problemVersion.setStatus(Status.VERIFIED);
         problemVersionRepository.save(problemVersion);
@@ -111,9 +119,9 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     @Override
     public AuthorSolutionResponse addAuthorSolution(UUID versionId, AuthorSolutionRequest request) {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
-
-        if (problemVersion.getStatus() != Status.DRAFT) {
-            throw new IllegalStateException("Cannot add tests to non-DRAFT version");
+        if(problemVersionPolicy.checkVersion(problemVersion)){
+            ProblemVersion newVersion = copyVersion(problemVersion);
+            return addAuthorSolution(newVersion.getId(), request);
         }
 
         if (request.getSourceCode() == null || request.getSourceCode().isBlank()) {
@@ -147,7 +155,10 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
                 .sourceCode(url)
                 .build();
 
+        problemVersion.setAuthorSolution(solution);
+
         authorSolutionRepository.save(solution);
+        problemVersionRepository.save(problemVersion);
         return authorSolutionMapper.toDto(solution);
     }
 
@@ -160,6 +171,7 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
 
     @Override
     public void updateAuthorSolution(UUID versionId, AuthorSolutionRequest request) {
+        ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
         AuthorSolution solution = authorSolutionRepository.findByVersion_Id(versionId).orElseThrow(() -> new IllegalArgumentException("Author solution not found"));
 
          if (solution.getVersion().getStatus() != Status.DRAFT) {
@@ -190,13 +202,18 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         solution.setLanguage(request.getLanguage());
         solution.setSourceCode(url);
 
+        problemVersion.setAuthorSolution(solution);
+        problemVersionRepository.save(problemVersion);
         authorSolutionRepository.save(solution);
     }
 
     @Override
     public ProblemStatementResponse updateStatement(UUID versionId, ProblemStatementRequest request) {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
-        problemVersionPolicy.checkVersion(problemVersion);
+        if(problemVersionPolicy.checkVersion(problemVersion)){
+            ProblemVersion newVersion = copyVersion(problemVersion);
+            return updateStatement(newVersion.getId(), request);
+        }
 
         ProblemStatement oldProblemStatement = problemStatementRepository.findProblemStatementByVersion_Id(versionId).orElseThrow(() ->  new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
         oldProblemStatement.setDescription(request.getDescription());
@@ -217,4 +234,65 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         return problemStatementMapper.toDto(oldProblemStatement);
     }
 
+    public ProblemVersion copyVersion(ProblemVersion oldVersion){
+        // Create Version
+        var version = createVersion(oldVersion.getProblem().getId(), ProblemVersionRequest.builder()
+                .timeLimitMs(oldVersion.getTimeLimitMs())
+                .memoryLimitMb(oldVersion.getMemoryLimitMb())
+                .scoringType(oldVersion.getScoringType())
+                .build()
+        );
+
+        ProblemVersion newVersion = problemVersionRepository.findById(version.getId()).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + version.getId() + " not found"));
+
+        // Copy problem statement
+        ProblemStatement oldProblemStatement = problemStatementRepository.findProblemStatementByVersion_Id(oldVersion.getId()).orElseThrow(() ->  new IllegalArgumentException("Problem version with id: " + oldVersion.getId() + " not found"));
+        updateStatement(version.getId(), ProblemStatementRequest.builder()
+                .description(oldProblemStatement.getDescription())
+                .inputDescription(oldProblemStatement.getInputDescription())
+                .outputDescription(oldProblemStatement.getOutputDescription())
+                .notes(oldProblemStatement.getNotes())
+                .build()
+        );
+
+        // Copy author solution
+        AuthorSolution oldAuthorSolution = authorSolutionRepository.findByVersion_Id(oldVersion.getId()).orElseThrow(() -> new IllegalArgumentException("Author solution not found"));
+        addAuthorSolution(version.getId(), AuthorSolutionRequest.builder()
+                .language(oldAuthorSolution.getLanguage())
+                .sourceCode(oldAuthorSolution.getSourceCode())
+                .build()
+        );
+
+        // Copy test groups
+        List<TestGroup> testGroups = testGroupRepository.findAllByVersion_Id(oldVersion.getId());
+        List<TestGroup> newTestGroups = new ArrayList<>();
+        for (TestGroup testGroup : testGroups) {
+            TestGroup newTestGroup = TestGroup.builder()
+                    .version(newVersion)
+                    .points(testGroup.getPoints())
+                    .build();
+            newTestGroups.add(newTestGroup);
+        }
+        testGroupRepository.saveAll(newTestGroups);
+
+        // Copy test cases
+        for (int i = 0; i < testGroups.size(); i++) {
+            TestGroup testGroup = testGroups.get(i);
+            List<TestCase> testCases = testCaseRepository.findTestCasesByGroup_Id(testGroup.getId());
+
+            List<TestCase> newTestCases = new ArrayList<>();
+            for(TestCase testCase : testCases){
+                TestCase tc = TestCase.builder()
+                        .group(newTestGroups.get(i))
+                        .orderId(testCase.getOrderId())
+                        .inputPath(testCase.getInputPath())
+                        .build();
+
+                newTestCases.add(tc);
+            }
+            testCaseRepository.saveAll(newTestCases);
+        }
+
+        return newVersion;
+    }
 }

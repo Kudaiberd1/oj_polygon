@@ -9,8 +9,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ProblemRepository extends JpaRepository<Problem, UUID> {
-
-    Optional<Problem> findById(String id);
-
     Page<Problem> findAllByOwnerId(UUID ownerId, Pageable pageable);
 }

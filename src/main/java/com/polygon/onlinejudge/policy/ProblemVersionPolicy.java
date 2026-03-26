@@ -25,11 +25,9 @@ public class ProblemVersionPolicy {
         }
     }
 
-    public void checkVersion(ProblemVersion problemVersion){
+    public boolean checkVersion(ProblemVersion problemVersion){
 
-        if(problemVersion.getStatus() != Status.DRAFT) {
-            throw new IllegalStateException("Problem version with id: " + problemVersion.getId() + " is already verified, you cannot change");
-        }
+        return (problemVersion.getStatus() != Status.DRAFT);
 
     }
 }
