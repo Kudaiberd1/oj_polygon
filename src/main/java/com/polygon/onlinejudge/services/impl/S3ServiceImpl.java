@@ -10,11 +10,8 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -71,11 +68,15 @@ public class S3ServiceImpl implements S3Service {
         }
     }
 
+    @Value("${seaweedfs.endpoint}")
+    private String seaweedfsEndpoint;
+
     public String getFileUrl(String key) {
-        return "https://" + bucketName + ".s3.amazonaws.com/" + key;
+        return seaweedfsEndpoint + "/" + bucketName + "/" + key;
     }
+
     private String normalizeKey(String key) {
-        String prefix = "https://" + bucketName + ".s3.amazonaws.com/";
+        String prefix = seaweedfsEndpoint + "/" + bucketName + "/";
         if (key != null && key.startsWith(prefix)) {
             return key.substring(prefix.length());
         }

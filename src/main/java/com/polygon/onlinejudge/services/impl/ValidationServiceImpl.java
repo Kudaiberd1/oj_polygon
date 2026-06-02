@@ -178,11 +178,15 @@ public class ValidationServiceImpl implements ValidationService {
 
             List<TestCase> testCases = testCaseRepository.findTestCasesByGroup_Id(testGroupId);
 
+            UUID problemId = group.getVersion().getProblem().getId();
+            UUID versionId = group.getVersion().getId();
             List<TestCase> updatedTest = new ArrayList<>();
             for (int i = 0; i < testCases.size(); i++) {
                 TestCase tc = testCases.get(i);
                 String outputKey = String.format(
-                        "polygon/%s/%03d.out",
+                        "problems/%s/versions/%s/tests/%s/%03d.out",
+                        problemId,
+                        versionId,
                         group.getId(),
                         tc.getOrderId()
                 );

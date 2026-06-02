@@ -70,8 +70,12 @@ public class ProblemTestServiceImpl implements ProblemTestService {
 
         int nextOrder = testCaseRepository.countTestCasesByGroup_Id(group.getId());
 
+        UUID problemId = group.getVersion().getProblem().getId();
+        UUID versionId = group.getVersion().getId();
         String inputKey = String.format(
-                "polygon/%s/%03d.in",
+                "problems/%s/versions/%s/tests/%s/%03d.in",
+                problemId,
+                versionId,
                 group.getId(),
                 nextOrder
         );

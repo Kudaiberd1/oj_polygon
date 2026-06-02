@@ -135,20 +135,18 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
             throw new IllegalStateException("Already has an author solution, you cannot add another one");
         }
 
-        UUID uuid = UUID.randomUUID();
         String ext = switch (request.getLanguage()) {
             case JAVA -> "java";
             case CPP -> "cpp";
             case PY -> "py";
         };
 
-        String key = String.format(
-                "polygon/versions/%s/solutions/author/%s",
+        String inputKey = String.format(
+                "problems/%s/versions/%s/solution.%s",
+                problemVersion.getProblem().getId(),
                 versionId,
-                uuid
+                ext
         );
-
-        String inputKey = key + ("."+ext);
 
         String url = s3Service.putText(inputKey, request.getSourceCode());
 
@@ -185,20 +183,18 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
             throw new IllegalArgumentException("Input is empty");
         }
 
-        UUID uuid = UUID.randomUUID();
         String ext = switch (request.getLanguage()) {
             case JAVA -> "java";
             case CPP -> "cpp";
             case PY -> "py";
         };
 
-        String key = String.format(
-                "polygon/versions/%s/solutions/author/%s",
+        String inputKey = String.format(
+                "problems/%s/versions/%s/solution.%s",
+                problemVersion.getProblem().getId(),
                 versionId,
-                uuid
+                ext
         );
-
-        String inputKey = key + ("."+ext);
 
         String url = s3Service.putText(inputKey, request.getSourceCode());
 

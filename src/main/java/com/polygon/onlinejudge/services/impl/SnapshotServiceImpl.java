@@ -23,7 +23,7 @@ public class SnapshotServiceImpl implements SnapshotService {
         if (snapshot == null) {
             throw new IllegalArgumentException("Snapshot not found");
         }
-        return snapshot.getProblemId();
+        return snapshot.getId();
     }
 
     @Override

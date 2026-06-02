@@ -10,7 +10,7 @@ public class WebClientConfig {
     @Bean
     public WebClient judge0WebClient() {
         return WebClient.builder()
-                .baseUrl("http://100.68.203.47:2358")
+                .baseUrl("http://100.64.0.22:2358")
                 .build();
     }
 }
