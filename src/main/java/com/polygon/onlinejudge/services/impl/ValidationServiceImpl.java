@@ -4,12 +4,14 @@ import com.polygon.onlinejudge.dto.judge.Judge0SubmissionRequest;
 import com.polygon.onlinejudge.dto.judge.Judge0SubmissionResponse;
 import com.polygon.onlinejudge.entities.*;
 import com.polygon.onlinejudge.entities.enums.Status;
-import com.polygon.onlinejudge.repositories.LogsRepository;
+import com.polygon.onlinejudge.repositories.ProblemVersionRepository;
 import com.polygon.onlinejudge.repositories.TestCaseRepository;
 import com.polygon.onlinejudge.repositories.TestGroupRepository;
 import com.polygon.onlinejudge.services.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,11 @@ public class ValidationServiceImpl implements ValidationService {
     private final Judge0ClientService judge0ClientService;
     private final LogsService logsService;
     private final TestCaseRepository testCaseRepository;
+    private final ProblemVersionRepository problemVersionRepository;
+
+    @Lazy
+    @Autowired
+    private ValidationService self;
 
     @Override
     public void verifyVersion(ProblemVersion problemVersion) {
@@ -33,10 +40,6 @@ public class ValidationServiceImpl implements ValidationService {
 
         if (problemVersion == null) {
             throw new IllegalArgumentException("Problem version is null");
-        }
-
-        if (problemVersion.getStatus() != Status.DRAFT) {
-            errors.add("Only DRAFT versions can be verified");
         }
 
         if (problemVersion.getTimeLimitMs() == null || problemVersion.getTimeLimitMs() <= 0) {
@@ -95,6 +98,9 @@ public class ValidationServiceImpl implements ValidationService {
             }
         }
 
+        problemVersion.setStatus(Status.REJECTED);
+        problemVersionRepository.save(problemVersion);
+
         if (!errors.isEmpty()) {
             throw new IllegalStateException(String.join("; ", errors));
         }
@@ -116,11 +122,11 @@ public class ValidationServiceImpl implements ValidationService {
 
         List<TestGroup> testGroups = testGroupRepository.findAllByVersion_Id(problemVersion.getId());
 
-        Map<UUID, List<String>> testGroupResults = new HashMap<>();
+        Map<Long, String> testOutputs = new HashMap<>();
+        List<String> failures = new ArrayList<>();
 
-        for(TestGroup group : testGroups){
-            List<String> results = new ArrayList<>();
-            for(var test : group.getTests()){
+        for (TestGroup group : testGroups) {
+            for (var test : group.getTests()) {
                 String input = s3Service.getInput(test.getInputPath());
                 Judge0SubmissionRequest request = Judge0SubmissionRequest.builder()
                         .source_code(sourceCode)
@@ -133,32 +139,39 @@ public class ValidationServiceImpl implements ValidationService {
 
                 Judge0SubmissionResponse response = judge0ClientService.runSubmission(request);
 
-                Logs logg = Logs.builder()
+                Logs log = Logs.builder()
                         .version(problemVersion)
+                        .orderId(test.getOrderId())
+                        .testGroupId(group.getId())
                         .status(response.getStatus() != null ? response.getStatus().getDescription() : "Unknown")
                         .log(response.getStderr() != null ? response.getStderr() : response.getCompile_output() != null ? response.getCompile_output() : "")
-                        .message(response.getMessage() != null ? response.getMessage() : "Unknown")
+                        .message(response.getMessage() != null ? response.getMessage() : "")
                         .time(response.getTime() != null ? response.getTime() : "")
                         .memory(response.getMemory() != null ? response.getMemory() : 0L)
                         .build();
 
-                logsService.saveLog(logg);
+                logsService.saveLog(log);
 
-                if(response.getStatus() == null){
-                    throw new IllegalStateException("Test " + test.getId() + ": Author solution failed with unknown error");
-                }
-
-                if(response.getStatus().getId() != 3){
-
-                    throw new IllegalStateException("Test " + test.getId() + ": Author solution failed with status " + response.getStatus().getDescription());
+                if (response.getStatus() != null && response.getStatus().getId() == 3) {
+                    testOutputs.put(test.getId(), response.getStdout());
                 } else {
-                    results.add(response.getStdout());
+                    String desc = response.getStatus() != null ? response.getStatus().getDescription() : "Unknown error";
+                    failures.add("Test " + test.getOrderId() + ": " + desc);
                 }
             }
-            testGroupResults.put(group.getId(), results);
         }
 
-        setTestCaseOutput(testGroupResults);
+
+
+        self.clearTestCaseOutputs(problemVersion);
+        self.setTestCaseOutput(testOutputs);
+        log.info(testOutputs.toString());
+
+        if (!failures.isEmpty()) {
+            problemVersion.setStatus(Status.REJECTED);
+            problemVersionRepository.save(problemVersion);
+            throw new IllegalStateException("Author solution failed on " + failures.size() + " test(s): " + String.join("; ", failures));
+        }
     }
 
     private boolean isBlank(String value) {
@@ -167,36 +180,42 @@ public class ValidationServiceImpl implements ValidationService {
 
 
     @Override
-    public void setTestCaseOutput(Map<UUID, List<String>> testGroupOutputs) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void clearTestCaseOutputs(ProblemVersion problemVersion) {
+        List<TestCase> toClean = testCaseRepository.findAllByGroup_Version_Id(problemVersion.getId())
+                .stream()
+                .filter(tc -> tc.getOutputPath() != null)
+                .toList();
+        toClean.forEach(tc -> {
+            s3Service.delete(tc.getOutputPath());
+            tc.setOutputPath(null);
+        });
+        testCaseRepository.saveAll(toClean);
+    }
 
-        for (Map.Entry<UUID, List<String>> entry : testGroupOutputs.entrySet()) {
-            UUID testGroupId = entry.getKey();
-            List<String> outputs = entry.getValue();
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void setTestCaseOutput(Map<Long, String> testOutputs) {
+        List<TestCase> testCases = new ArrayList<>();
+        for (Map.Entry<Long, String> entry : testOutputs.entrySet()) {
+            TestCase tc = testCaseRepository.findById(entry.getKey())
+                    .orElseThrow(() -> new IllegalArgumentException("TestCase not found: " + entry.getKey()));
 
-            TestGroup group = testGroupRepository.findById(testGroupId)
-                    .orElseThrow(() -> new IllegalArgumentException("TestGroup not found"));
-
-            List<TestCase> testCases = testCaseRepository.findTestCasesByGroup_Id(testGroupId);
-
+            TestGroup group = tc.getGroup();
             UUID problemId = group.getVersion().getProblem().getId();
-            UUID versionId = group.getVersion().getId();
-            List<TestCase> updatedTest = new ArrayList<>();
-            for (int i = 0; i < testCases.size(); i++) {
-                TestCase tc = testCases.get(i);
-                String outputKey = String.format(
-                        "problems/%s/versions/%s/tests/%s/%03d.out",
-                        problemId,
-                        versionId,
-                        group.getId(),
-                        tc.getOrderId()
-                );
+                UUID versionId = group.getVersion().getId();
 
-                String url = s3Service.putText(outputKey, outputs.get(i));
+            String outputKey = String.format(
+                    "problems/%s/versions/%s/tests/%s/%03d.out",
+                    problemId,
+                    versionId,
+                    group.getId(),
+                    tc.getOrderId()
+            );
 
-                tc.setOutputPath(url);
-                updatedTest.add(tc);
-            }
-            testCaseRepository.saveAll(updatedTest);
+            tc.setOutputPath(s3Service.putText(outputKey, entry.getValue()));
+            testCases.add(tc);
         }
+        testCaseRepository.saveAll(testCases);
     }
 }

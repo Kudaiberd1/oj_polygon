@@ -21,7 +21,10 @@ import com.polygon.onlinejudge.services.S3Service;
 import com.polygon.onlinejudge.services.ValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -48,28 +51,34 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     private final TestCaseRepository testCaseRepository;
     private final Judge0ClientService judge0ClientService;
 
+    @Lazy
+    @Autowired
+    private ProblemVersionService self;
+
     @Override
     public ProblemVersionResponse createVersion(UUID problemId, ProblemVersionRequest request) {
         problemVersionPolicy.requireLatestVersionVerified(problemId);
+
+        ProblemVersion latest = problemVersionRepository.findFirstByProblem_IdOrderByVersionDesc(problemId).orElse(null);
+        if (latest != null) {
+            return problemVersionMapper.toDto(copyVersion(latest));
+        }
+
+        return problemVersionMapper.toDto(createBlankVersion(problemId, request));
+    }
+
+    private ProblemVersion createBlankVersion(UUID problemId, ProblemVersionRequest request) {
         Problem problem = problemRepository.findById(problemId).orElseThrow(() -> new IllegalArgumentException("Problem with id: " + problemId + " not found"));
-        var version = problemVersionRepository.findLastVersion(problemId);
-        int v = 0;
-        if(version != null) v = version.getVersion();
+        int v = problemVersionRepository.findLastVersion(problemId)
+                .map(ProblemVersionRepository.ProblemVersionView::getVersion)
+                .orElse(0);
 
         ProblemVersion problemVersion = ProblemVersion.builder()
                 .problem(problem)
-                .version(v+1)
+                .version(v + 1)
                 .status(Status.DRAFT)
-                .timeLimitMs(
-                        request.getTimeLimitMs() != null
-                            ? request.getTimeLimitMs()
-                            : 1000L
-                )
-                .memoryLimitMb(
-                        request.getMemoryLimitMb() != null
-                                ? request.getMemoryLimitMb()
-                                : 256L
-                )
+                .timeLimitMs(request.getTimeLimitMs() != null ? request.getTimeLimitMs() : 1000L)
+                .memoryLimitMb(request.getMemoryLimitMb() != null ? request.getMemoryLimitMb() : 256L)
                 .scoringType(request.getScoringType())
                 .build();
         ProblemVersion newProblemVersion = problemVersionRepository.save(problemVersion);
@@ -80,9 +89,7 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         problemStatement = problemStatementRepository.save(problemStatement);
 
         newProblemVersion.setProblemStatement(problemStatement);
-        problemVersionRepository.save(newProblemVersion);
-
-        return problemVersionMapper.toDto(newProblemVersion);
+        return problemVersionRepository.save(newProblemVersion);
     }
 
     @Override
@@ -94,10 +101,6 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     @Override
     public ProblemVersionResponse updateVersion(UUID versionId, ProblemVersionRequest request) {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
-        if(problemVersionPolicy.checkVersion(problemVersion)){
-            ProblemVersion newVersion = copyVersion(problemVersion);
-            return updateVersion(newVersion.getId(), request);
-        }
 
         problemVersionMapper.updateProblem(request, problemVersion);
         ProblemVersion newVersion = problemVersionRepository.save(problemVersion);
@@ -108,24 +111,34 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     @Override
     public void finalizeVersion(UUID versionId) {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
-        if(problemVersion.getStatus() != Status.DRAFT){
-            throw new IllegalStateException("Only DRAFT version can be finalized");
+        if(problemVersion.getStatus() == Status.VERIFIED){
+            throw new IllegalStateException("Only DRAFT or REJECTED version can be finalized");
         }
 
-        validationService.verifyVersion(problemVersion);
-        validationService.verifyAuthorSolution(problemVersion);
+        try {
+            validationService.verifyVersion(problemVersion);
+            validationService.verifyAuthorSolution(problemVersion);
+        } catch (Exception e) {
+            self.markRejected(versionId);
+            throw e;
+        }
 
         problemVersion.setStatus(Status.VERIFIED);
         problemVersionRepository.save(problemVersion);
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void markRejected(UUID versionId) {
+        problemVersionRepository.findById(versionId).ifPresent(v -> {
+            v.setStatus(Status.REJECTED);
+            problemVersionRepository.save(v);
+        });
+    }
+
+    @Override
     public AuthorSolutionResponse addAuthorSolution(UUID versionId, AuthorSolutionRequest request) {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
-        if(problemVersionPolicy.checkVersion(problemVersion)){
-            ProblemVersion newVersion = copyVersion(problemVersion);
-            return addAuthorSolution(newVersion.getId(), request);
-        }
 
         if (request.getSourceCode() == null || request.getSourceCode().isBlank()) {
             throw new IllegalArgumentException("Input is empty");
@@ -175,7 +188,7 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
         AuthorSolution solution = authorSolutionRepository.findByVersion_Id(versionId).orElseThrow(() -> new IllegalArgumentException("Author solution not found"));
 
-         if (solution.getVersion().getStatus() != Status.DRAFT) {
+         if (solution.getVersion().getStatus() == Status.VERIFIED) {
             throw new IllegalStateException("Cannot update author solution of non-DRAFT version");
          }
 
@@ -209,10 +222,6 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     @Override
     public ProblemStatementResponse updateStatement(UUID versionId, ProblemStatementRequest request) {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
-        if(problemVersionPolicy.checkVersion(problemVersion)){
-            ProblemVersion newVersion = copyVersion(problemVersion);
-            return updateStatement(newVersion.getId(), request);
-        }
 
         ProblemStatement oldProblemStatement = problemStatementRepository.findProblemStatementByVersion_Id(versionId).orElseThrow(() ->  new IllegalArgumentException("Problem version with id: " + versionId + " not found"));
         oldProblemStatement.setDescription(request.getDescription());
@@ -234,19 +243,16 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     }
 
     public ProblemVersion copyVersion(ProblemVersion oldVersion){
-        // Create Version
-        var version = createVersion(oldVersion.getProblem().getId(), ProblemVersionRequest.builder()
+        ProblemVersion newVersion = createBlankVersion(oldVersion.getProblem().getId(), ProblemVersionRequest.builder()
                 .timeLimitMs(oldVersion.getTimeLimitMs())
                 .memoryLimitMb(oldVersion.getMemoryLimitMb())
                 .scoringType(oldVersion.getScoringType())
                 .build()
         );
 
-        ProblemVersion newVersion = problemVersionRepository.findById(version.getId()).orElseThrow(() -> new IllegalArgumentException("Problem version with id: " + version.getId() + " not found"));
-
         // Copy problem statement
         ProblemStatement oldProblemStatement = problemStatementRepository.findProblemStatementByVersion_Id(oldVersion.getId()).orElseThrow(() ->  new IllegalArgumentException("Problem version with id: " + oldVersion.getId() + " not found"));
-        updateStatement(version.getId(), ProblemStatementRequest.builder()
+        updateStatement(newVersion.getId(), ProblemStatementRequest.builder()
                 .description(oldProblemStatement.getDescription())
                 .inputDescription(oldProblemStatement.getInputDescription())
                 .outputDescription(oldProblemStatement.getOutputDescription())
@@ -256,9 +262,9 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
 
         // Copy author solution
         AuthorSolution oldAuthorSolution = authorSolutionRepository.findByVersion_Id(oldVersion.getId()).orElseThrow(() -> new IllegalArgumentException("Author solution not found"));
-        addAuthorSolution(version.getId(), AuthorSolutionRequest.builder()
+        addAuthorSolution(newVersion.getId(), AuthorSolutionRequest.builder()
                 .language(oldAuthorSolution.getLanguage())
-                .sourceCode(oldAuthorSolution.getSourceCode())
+                .sourceCode(s3Service.getInput(oldAuthorSolution.getSourceCode()))
                 .build()
         );
 
@@ -275,19 +281,28 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         testGroupRepository.saveAll(newTestGroups);
 
         // Copy test cases
+        UUID problemId = newVersion.getProblem().getId();
+        UUID newVersionId = newVersion.getId();
         for (int i = 0; i < testGroups.size(); i++) {
-            TestGroup testGroup = testGroups.get(i);
-            List<TestCase> testCases = testCaseRepository.findTestCasesByGroup_Id(testGroup.getId());
+            TestGroup oldGroup = testGroups.get(i);
+            TestGroup newGroup = newTestGroups.get(i);
+            List<TestCase> testCases = testCaseRepository.findTestCasesByGroup_Id(oldGroup.getId());
 
             List<TestCase> newTestCases = new ArrayList<>();
-            for(TestCase testCase : testCases){
-                TestCase tc = TestCase.builder()
-                        .group(newTestGroups.get(i))
-                        .orderId(testCase.getOrderId())
-                        .inputPath(testCase.getInputPath())
-                        .build();
+            for (TestCase testCase : testCases) {
+                String inputKey = String.format(
+                        "problems/%s/versions/%s/tests/%s/%03d.in",
+                        problemId, newVersionId, newGroup.getId(), testCase.getOrderId()
+                );
+                String inputContent = s3Service.getInput(testCase.getInputPath());
+                String newInputPath = s3Service.putText(inputKey, inputContent);
 
-                newTestCases.add(tc);
+                newTestCases.add(TestCase.builder()
+                        .group(newGroup)
+                        .problemVersion(newVersion)
+                        .orderId(testCase.getOrderId())
+                        .inputPath(newInputPath)
+                        .build());
             }
             testCaseRepository.saveAll(newTestCases);
         }

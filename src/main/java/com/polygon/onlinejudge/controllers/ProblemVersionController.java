@@ -8,6 +8,7 @@ import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
 import com.polygon.onlinejudge.services.ProblemVersionService;
+import com.polygon.onlinejudge.services.SnapshotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class ProblemVersionController {
 
     private final ProblemVersionService problemVersionService;
+    private final SnapshotService snapshotService;
 
     @PostMapping("/problems/{problemId}/versions")
     public ResponseEntity<ProblemVersionResponse> createVersion(@PathVariable UUID problemId, @RequestBody ProblemVersionRequest request) {
@@ -85,5 +87,16 @@ public class ProblemVersionController {
     @GetMapping("/test-code/{solutionId}")
     public ResponseEntity<Judge0SubmissionResponse> testCode(@PathVariable UUID solutionId, @RequestParam String test) {
         return ResponseEntity.ok(problemVersionService.testCode(solutionId, test));
+    }
+
+    @PostMapping("/problems/{problemId}/versions/{versionId}/snapshot")
+    public ResponseEntity<Void> createSnapshot(@PathVariable UUID problemId, @PathVariable UUID versionId) {
+        snapshotService.createSnapshot(problemId, versionId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/problems/{problemId}/versions/{versionId}/snapshot")
+    public ResponseEntity<UUID> getSnapshot(@PathVariable UUID problemId, @PathVariable UUID versionId) {
+        return ResponseEntity.ok(snapshotService.getSnapshot(problemId, versionId));
     }
 }

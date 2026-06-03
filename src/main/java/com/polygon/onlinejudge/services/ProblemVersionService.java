@@ -26,6 +26,8 @@ public interface ProblemVersionService {
 
     void finalizeVersion(UUID versionId);
 
+    void markRejected(UUID versionId);
+
     AuthorSolutionResponse addAuthorSolution(UUID versionId, AuthorSolutionRequest request);
 
     AuthorSolutionResponse getAuthorSolution(UUID versionId);

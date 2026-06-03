@@ -31,7 +31,6 @@ public class ProblemTestServiceImpl implements ProblemTestService {
     private final TestGroupMapper testGroupMapper;
     private final S3Service s3Service;
     private final TestCaseRepository testCaseRepository;
-    private final ProblemVersionServiceImpl problemVersionService;
 
     @Override
     public void setProblemScore(TestGroupRequest request, UUID versionId) {
@@ -58,11 +57,7 @@ public class ProblemTestServiceImpl implements ProblemTestService {
         TestGroup group = testGroupRepository.findById(testGroupId)
                 .orElseThrow(() -> new IllegalArgumentException("TestGroup not found"));
 
-        if(problemVersionPolicy.checkVersion(group.getVersion())){
-            ProblemVersion newVersion = problemVersionService.copyVersion(group.getVersion());
-            createTestCase(newVersion.getId(), req);
-            return;
-        }
+        ProblemVersion version = group.getVersion();
 
         if (req.getInput() == null || req.getInput().isBlank()) {
             throw new IllegalArgumentException("Input is empty");
@@ -84,6 +79,7 @@ public class ProblemTestServiceImpl implements ProblemTestService {
 
         TestCase tc = TestCase.builder()
                 .group(group)
+                .problemVersion(version)
                 .orderId((long) nextOrder)
                 .inputPath(url)
                 .build();

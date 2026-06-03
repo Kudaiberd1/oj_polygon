@@ -22,11 +22,11 @@ public interface ProblemVersionRepository extends JpaRepository<ProblemVersion, 
     @Query("""
        SELECT pv.id AS id, pv.version AS version, pv.status AS status
        FROM ProblemVersion pv
-       WHERE pv.problem.id = :problemId
+       WHERE pv.problem.id = :problemId AND pv.status = 'VERIFIED'
        ORDER BY pv.version DESC
        LIMIT 1
        """)
-    ProblemVersionView findLastVersion(UUID problemId);
+    Optional<ProblemVersionView> findLastVersion(UUID problemId);
 
     List<ProblemVersion> findAllByProblem_Id(UUID problemId);
 }

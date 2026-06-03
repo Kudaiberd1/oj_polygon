@@ -1,6 +1,7 @@
 package com.polygon.onlinejudge.services.impl;
 
 import com.polygon.onlinejudge.entities.Snapshot;
+import com.polygon.onlinejudge.entities.ProblemVersion;
 import com.polygon.onlinejudge.entities.enums.Status;
 import com.polygon.onlinejudge.repositories.ProblemVersionRepository;
 import com.polygon.onlinejudge.repositories.SnapshotRepository;
@@ -18,8 +19,8 @@ public class SnapshotServiceImpl implements SnapshotService {
     private final ProblemVersionRepository problemVersionRepository;
 
     @Override
-    public UUID getSnapshot(UUID problemId) {
-        Snapshot snapshot = snapshotRepository.getSnapshotByProblemId(problemId);
+    public UUID getSnapshot(UUID problemId, UUID versionId) {
+        Snapshot snapshot = snapshotRepository.getSnapshotByProblemIdAndProblemVersionId(problemId, versionId);
         if (snapshot == null) {
             throw new IllegalArgumentException("Snapshot not found");
         }
@@ -27,28 +28,22 @@ public class SnapshotServiceImpl implements SnapshotService {
     }
 
     @Override
-    public void updateSnapshot(UUID problemId) {
-        Snapshot snapshot = snapshotRepository.getSnapshotByProblemId(problemId);
-        if (snapshot == null) {
-            var problemVersion = problemVersionRepository.findLastVersion(problemId);
+    public void createSnapshot(UUID problemId, UUID versionId) {
+        ProblemVersion version = problemVersionRepository.findById(versionId)
+                .orElseThrow(() -> new IllegalArgumentException("Version not found: " + versionId));
 
-            if (problemVersion.getStatus() != Status.VERIFIED) {
-                throw new IllegalStateException("Last verified problem version is not verified");
-            }
-            Snapshot newSnapshot = Snapshot.builder()
-                    .problemId(problemId)
-                    .problemVersionId(problemVersion.getId())
-                    .build();
-            snapshotRepository.save(newSnapshot);
-        }else{
-            var problemVersion = problemVersionRepository.findLastVersion(problemId);
-
-            if (problemVersion.getStatus() != Status.VERIFIED) {
-                throw new IllegalStateException("Last verified problem version is not verified");
-            }
-
-            snapshot.setProblemVersionId(problemVersion.getId());
-            snapshotRepository.save(snapshot);
+        if (!version.getProblem().getId().equals(problemId)) {
+            throw new IllegalArgumentException("Version does not belong to problem: " + problemId);
         }
+
+        if (version.getStatus() != Status.VERIFIED) {
+            throw new IllegalStateException("Only VERIFIED versions can be snapshotted");
+        }
+
+        Snapshot snapshot = Snapshot.builder()
+                .problemId(problemId)
+                .problemVersionId(versionId)
+                .build();
+        snapshotRepository.save(snapshot);
     }
 }
