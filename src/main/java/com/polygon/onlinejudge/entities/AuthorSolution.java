@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
@@ -22,6 +23,7 @@ public class AuthorSolution {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
+    @ToString.Exclude
     @OneToOne
     @JsonBackReference
     @JoinColumn(name = "problem_version_id", nullable = false)

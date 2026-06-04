@@ -57,4 +57,10 @@ public class ProblemTestController {
         problemTestService.deleteTestGroup(testGroupId);
         return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
     }
+
+    @PatchMapping("/{testGroupId}/tests/{testCaseId}")
+    public ResponseEntity<Void> makeTestCaseAsExample(@PathVariable UUID testGroupId, @PathVariable Long testCaseId) {
+        problemTestService.makeExampleTestCase(testGroupId, testCaseId);
+        return ResponseEntity.ok().build();
+    }
 }

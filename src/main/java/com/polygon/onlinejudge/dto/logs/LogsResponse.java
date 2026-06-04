@@ -1,6 +1,5 @@
 package com.polygon.onlinejudge.dto.logs;
 
-import com.polygon.onlinejudge.entities.ProblemVersion;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

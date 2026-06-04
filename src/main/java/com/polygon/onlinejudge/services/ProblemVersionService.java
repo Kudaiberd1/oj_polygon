@@ -7,9 +7,11 @@ import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
+import com.polygon.onlinejudge.dto.test.TestCaseResponse;
 import com.polygon.onlinejudge.entities.ProblemVersion;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ProblemVersionService {
@@ -35,4 +37,6 @@ public interface ProblemVersionService {
     void updateAuthorSolution(UUID versionId, AuthorSolutionRequest request);
 
     Judge0SubmissionResponse testCode(UUID solutionId, String test);
+
+    List<TestCaseResponse> getExmapleTestCases(UUID versionId);
 }

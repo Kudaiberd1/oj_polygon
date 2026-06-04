@@ -8,5 +8,6 @@ public class TestCaseResponse {
     private Long orderId;
     private String inputPath;
     private String outputPath;
+    private Boolean isExample;
 }
 

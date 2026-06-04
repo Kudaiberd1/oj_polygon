@@ -7,12 +7,14 @@ import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
+import com.polygon.onlinejudge.dto.test.TestCaseResponse;
 import com.polygon.onlinejudge.services.ProblemVersionService;
 import com.polygon.onlinejudge.services.SnapshotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -98,5 +100,10 @@ public class ProblemVersionController {
     @GetMapping("/problems/{problemId}/versions/{versionId}/snapshot")
     public ResponseEntity<UUID> getSnapshot(@PathVariable UUID problemId, @PathVariable UUID versionId) {
         return ResponseEntity.ok(snapshotService.getSnapshot(problemId, versionId));
+    }
+
+    @GetMapping("/versions/{versionId}/test-cases")
+    public ResponseEntity<List<TestCaseResponse>> getExmapleTestCases(@PathVariable UUID versionId) {
+        return ResponseEntity.ok(problemVersionService.getExmapleTestCases(versionId));
     }
 }

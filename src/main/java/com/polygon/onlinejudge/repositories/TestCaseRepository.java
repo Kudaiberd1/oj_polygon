@@ -17,4 +17,6 @@ public interface TestCaseRepository extends JpaRepository<TestCase, Long> {
     List<TestCase> findTestCasesByGroup_Id(UUID groupId);
 
     List<TestCase> findAllByGroup_Version_Id(UUID versionId);
+
+    List<TestCase> findTestCasesByIsExampleAndProblemVersion_Id(Boolean isExample, UUID problemVersionId);
 }

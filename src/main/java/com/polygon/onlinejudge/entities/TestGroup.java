@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.List;
@@ -21,10 +22,12 @@ public class TestGroup {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "problem_version_id", nullable = false)
     private ProblemVersion version;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<TestCase> tests;
 

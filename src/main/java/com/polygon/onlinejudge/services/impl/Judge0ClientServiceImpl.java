@@ -37,6 +37,7 @@ public class Judge0ClientServiceImpl implements Judge0ClientService {
             response.setStdout(decode(response.getStdout()));
             response.setStderr(decode(response.getStderr()));
             response.setCompile_output(decode(response.getCompile_output()));
+            response.setMessage(decode(response.getMessage()));
         }
         return response;
     }

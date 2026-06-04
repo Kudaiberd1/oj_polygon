@@ -27,7 +27,7 @@ public class ProblemVersionPolicy {
 
     public boolean checkVersion(ProblemVersion problemVersion){
 
-        return (problemVersion.getStatus() != Status.DRAFT);
+        return (problemVersion.getStatus() == Status.VERIFIED);
 
     }
 }

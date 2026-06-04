@@ -106,4 +106,11 @@ public class ProblemTestServiceImpl implements ProblemTestService {
 
         testGroupRepository.delete(testGroup);
     }
+
+    @Override
+    public void makeExampleTestCase(UUID testGroupId, Long testCaseId) {
+        TestCase testCase = testCaseRepository.findByGroup_IdAndId(testGroupId, testCaseId).orElseThrow(() -> new IllegalArgumentException("TestCase not found"));
+        testCase.setIsExample(testCase.getIsExample() == null || !testCase.getIsExample());
+        testCaseRepository.save(testCase);
+    }
 }

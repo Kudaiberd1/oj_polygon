@@ -8,11 +8,13 @@ import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
+import com.polygon.onlinejudge.dto.test.TestCaseResponse;
 import com.polygon.onlinejudge.entities.*;
 import com.polygon.onlinejudge.entities.enums.Status;
 import com.polygon.onlinejudge.mappers.AuthorSolutionMapper;
 import com.polygon.onlinejudge.mappers.ProblemStatementMapper;
 import com.polygon.onlinejudge.mappers.ProblemVersionMapper;
+import com.polygon.onlinejudge.mappers.TestCaseMapper;
 import com.polygon.onlinejudge.policy.ProblemVersionPolicy;
 import com.polygon.onlinejudge.repositories.*;
 import com.polygon.onlinejudge.services.Judge0ClientService;
@@ -49,6 +51,7 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     private final ValidationService validationService;
     private final TestGroupRepository testGroupRepository;
     private final TestCaseRepository testCaseRepository;
+    private final TestCaseMapper testCaseMapper;
     private final Judge0ClientService judge0ClientService;
 
     @Lazy
@@ -331,5 +334,11 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         Judge0SubmissionResponse response = judge0ClientService.runSubmission(request);
 
         return response;
+    }
+
+    @Override
+    public List<TestCaseResponse> getExmapleTestCases(UUID versionId) {
+        List<TestCase> testCases = testCaseRepository.findTestCasesByIsExampleAndProblemVersion_Id(true, versionId);
+        return testCases.stream().map(testCaseMapper::toDto).toList();
     }
 }

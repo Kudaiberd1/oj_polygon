@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
@@ -21,15 +22,24 @@ public class Logs {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "problem_version_id", nullable = false)
     private ProblemVersion version;
 
+    @Column(columnDefinition = "TEXT")
     private String status;
+
+    @Column(columnDefinition = "TEXT")
     private String log;
+
+    @Column(columnDefinition = "TEXT")
     private String message;
+
     private String time;
     private Long memory;
+    private Long orderId;
+    private UUID testGroupId;
     private LocalDateTime verifiedAt;
 
     @PrePersist
