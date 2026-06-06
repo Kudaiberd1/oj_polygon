@@ -1,6 +1,5 @@
 package com.polygon.onlinejudge.dto.problemVersion;
 
-import com.polygon.onlinejudge.entities.enums.ContestType;
 import com.polygon.onlinejudge.entities.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +21,5 @@ public class ProblemVersionResponse {
     private ProblemStatementResponse statement;
     private Long timeLimitMs;
     private Long memoryLimitMb;
-    private ContestType scoringType;
     private LocalDateTime createdAt;
 }

@@ -20,7 +20,7 @@ public class SnapshotServiceImpl implements SnapshotService {
 
     @Override
     public UUID getSnapshot(UUID problemId, UUID versionId) {
-        Snapshot snapshot = snapshotRepository.getSnapshotByProblemIdAndProblemVersionId(problemId, versionId);
+        Snapshot snapshot = snapshotRepository.findByProblem_IdAndProblemVersion_Id(problemId, versionId);
         if (snapshot == null) {
             throw new IllegalArgumentException("Snapshot not found");
         }
@@ -41,8 +41,8 @@ public class SnapshotServiceImpl implements SnapshotService {
         }
 
         Snapshot snapshot = Snapshot.builder()
-                .problemId(problemId)
-                .problemVersionId(versionId)
+                .problem(version.getProblem())
+                .problemVersion(version)
                 .build();
         snapshotRepository.save(snapshot);
     }

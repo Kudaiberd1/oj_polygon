@@ -50,7 +50,7 @@ public class S3ServiceImpl implements S3Service {
     public void delete(String key) {
         s3Client.deleteObject(DeleteObjectRequest.builder()
                 .bucket(bucketName)
-                .key(key)
+                .key(normalizeKey(key))
                 .build());
     }
 

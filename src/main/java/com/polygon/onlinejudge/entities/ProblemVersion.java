@@ -1,7 +1,6 @@
 package com.polygon.onlinejudge.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.polygon.onlinejudge.entities.enums.ContestType;
 import com.polygon.onlinejudge.entities.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,9 +31,6 @@ public class ProblemVersion {
 
     private Long timeLimitMs;
     private Long memoryLimitMb;
-
-    @Enumerated(EnumType.STRING)
-    private ContestType scoringType;
 
     @OneToOne
     @JoinColumn(nullable = true)

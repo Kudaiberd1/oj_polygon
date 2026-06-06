@@ -38,5 +38,7 @@ public interface ProblemVersionService {
 
     Judge0SubmissionResponse testCode(UUID solutionId, String test);
 
-    List<TestCaseResponse> getExmapleTestCases(UUID versionId);
+    List<TestCaseResponse> getExampleTestCases(UUID versionId);
+
+    void checkAuthorSolution(UUID versionId);
 }

@@ -95,6 +95,7 @@ public class ProblemTestServiceImpl implements ProblemTestService {
 
         problemVersionPolicy.checkVersion(testGroup.getVersion());
 
+        deleteS3Files(testCase);
         testCaseRepository.delete(testCase);
     }
 
@@ -104,7 +105,13 @@ public class ProblemTestServiceImpl implements ProblemTestService {
 
         problemVersionPolicy.checkVersion(testGroup.getVersion());
 
+        testCaseRepository.findTestCasesByGroup_Id(testGroupId).forEach(this::deleteS3Files);
         testGroupRepository.delete(testGroup);
+    }
+
+    private void deleteS3Files(TestCase tc) {
+        if (tc.getInputPath() != null) s3Service.delete(tc.getInputPath());
+        if (tc.getOutputPath() != null) s3Service.delete(tc.getOutputPath());
     }
 
     @Override

@@ -82,7 +82,6 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
                 .status(Status.DRAFT)
                 .timeLimitMs(request.getTimeLimitMs() != null ? request.getTimeLimitMs() : 1000L)
                 .memoryLimitMb(request.getMemoryLimitMb() != null ? request.getMemoryLimitMb() : 256L)
-                .scoringType(request.getScoringType())
                 .build();
         ProblemVersion newProblemVersion = problemVersionRepository.save(problemVersion);
 
@@ -120,7 +119,7 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
 
         try {
             validationService.verifyVersion(problemVersion);
-            validationService.verifyAuthorSolution(problemVersion);
+            validationService.verifyAuthorSolution(problemVersion, true);
         } catch (Exception e) {
             self.markRejected(versionId);
             throw e;
@@ -249,7 +248,6 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
         ProblemVersion newVersion = createBlankVersion(oldVersion.getProblem().getId(), ProblemVersionRequest.builder()
                 .timeLimitMs(oldVersion.getTimeLimitMs())
                 .memoryLimitMb(oldVersion.getMemoryLimitMb())
-                .scoringType(oldVersion.getScoringType())
                 .build()
         );
 
@@ -337,8 +335,14 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     }
 
     @Override
-    public List<TestCaseResponse> getExmapleTestCases(UUID versionId) {
+    public List<TestCaseResponse> getExampleTestCases(UUID versionId) {
         List<TestCase> testCases = testCaseRepository.findTestCasesByIsExampleAndProblemVersion_Id(true, versionId);
         return testCases.stream().map(testCaseMapper::toDto).toList();
+    }
+
+    @Override
+    public void checkAuthorSolution(UUID versionId) {
+        ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Version not found"));
+        validationService.verifyAuthorSolution(problemVersion, false);
     }
 }

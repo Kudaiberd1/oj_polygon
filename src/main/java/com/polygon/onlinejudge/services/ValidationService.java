@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface ValidationService {
     void verifyVersion(ProblemVersion problemVersion);
-    void verifyAuthorSolution(ProblemVersion problemVersion);
+    void verifyAuthorSolution(ProblemVersion problemVersion, Boolean fullFinalize);
     void clearTestCaseOutputs(ProblemVersion problemVersion);
     void setTestCaseOutput(Map<Long, String> testOutputs);
 }

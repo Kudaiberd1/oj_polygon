@@ -1,12 +1,7 @@
 package com.polygon.onlinejudge.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
@@ -22,6 +17,13 @@ public class Snapshot {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    private UUID problemId;
-    private UUID problemVersionId;
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "problem_id", nullable = false)
+    private Problem problem;
+
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "problem_version_id", nullable = false)
+    private ProblemVersion problemVersion;
 }

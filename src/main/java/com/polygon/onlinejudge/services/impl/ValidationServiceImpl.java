@@ -50,10 +50,6 @@ public class ValidationServiceImpl implements ValidationService {
             errors.add("Memory limit must be greater than 0");
         }
 
-        if (problemVersion.getScoringType() == null) {
-            errors.add("Scoring type is required");
-        }
-
         ProblemStatement statement = problemVersion.getProblemStatement();
         if (statement == null) {
             errors.add("Problem statement is missing");
@@ -98,16 +94,13 @@ public class ValidationServiceImpl implements ValidationService {
             }
         }
 
-        problemVersion.setStatus(Status.REJECTED);
-        problemVersionRepository.save(problemVersion);
-
         if (!errors.isEmpty()) {
             throw new IllegalStateException(String.join("; ", errors));
         }
     }
 
     @Override
-    public void verifyAuthorSolution(ProblemVersion problemVersion) {
+    public void verifyAuthorSolution(ProblemVersion problemVersion, Boolean fullFinalize) {
         AuthorSolution solution = problemVersion.getAuthorSolution();
 
         String sourceCode = s3Service.getInput(solution.getSourceCode());
@@ -168,8 +161,10 @@ public class ValidationServiceImpl implements ValidationService {
         log.info(testOutputs.toString());
 
         if (!failures.isEmpty()) {
-            problemVersion.setStatus(Status.REJECTED);
-            problemVersionRepository.save(problemVersion);
+            if(fullFinalize) {
+                problemVersion.setStatus(Status.REJECTED);
+                problemVersionRepository.save(problemVersion);
+            }
             throw new IllegalStateException("Author solution failed on " + failures.size() + " test(s): " + String.join("; ", failures));
         }
     }

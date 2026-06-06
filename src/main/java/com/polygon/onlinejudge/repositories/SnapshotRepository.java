@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 
 public interface SnapshotRepository extends JpaRepository<Snapshot, UUID> {
-    Snapshot getSnapshotByProblemIdAndProblemVersionId(UUID problemId, UUID problemVersionId);
+    Snapshot findByProblem_IdAndProblemVersion_Id(UUID problemId, UUID problemVersionId);
 }

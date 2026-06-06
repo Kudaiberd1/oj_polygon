@@ -86,6 +86,12 @@ public class ProblemVersionController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/versions/{versionId}/validate-solution")
+    public ResponseEntity<Void> checkAuthorSolution(@PathVariable UUID versionId) {
+        problemVersionService.checkAuthorSolution(versionId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/test-code/{solutionId}")
     public ResponseEntity<Judge0SubmissionResponse> testCode(@PathVariable UUID solutionId, @RequestParam String test) {
         return ResponseEntity.ok(problemVersionService.testCode(solutionId, test));
@@ -103,7 +109,7 @@ public class ProblemVersionController {
     }
 
     @GetMapping("/versions/{versionId}/test-cases")
-    public ResponseEntity<List<TestCaseResponse>> getExmapleTestCases(@PathVariable UUID versionId) {
-        return ResponseEntity.ok(problemVersionService.getExmapleTestCases(versionId));
+    public ResponseEntity<List<TestCaseResponse>> getExampleTestCases(@PathVariable UUID versionId) {
+        return ResponseEntity.ok(problemVersionService.getExampleTestCases(versionId));
     }
 }
