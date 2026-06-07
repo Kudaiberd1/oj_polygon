@@ -26,4 +26,7 @@ public class Snapshot {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_version_id", nullable = false)
     private ProblemVersion problemVersion;
+
+    @Column(name = "is_committed")
+    private Boolean isCommitted;
 }

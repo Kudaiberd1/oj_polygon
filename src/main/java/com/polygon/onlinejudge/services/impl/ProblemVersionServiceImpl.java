@@ -4,6 +4,8 @@ import com.polygon.onlinejudge.dto.judge.Judge0SubmissionRequest;
 import com.polygon.onlinejudge.dto.judge.Judge0SubmissionResponse;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.BranchVersionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.OpenVersionResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
@@ -17,10 +19,7 @@ import com.polygon.onlinejudge.mappers.ProblemVersionMapper;
 import com.polygon.onlinejudge.mappers.TestCaseMapper;
 import com.polygon.onlinejudge.policy.ProblemVersionPolicy;
 import com.polygon.onlinejudge.repositories.*;
-import com.polygon.onlinejudge.services.Judge0ClientService;
-import com.polygon.onlinejudge.services.ProblemVersionService;
-import com.polygon.onlinejudge.services.S3Service;
-import com.polygon.onlinejudge.services.ValidationService;
+import com.polygon.onlinejudge.services.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -57,6 +57,8 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     @Lazy
     @Autowired
     private ProblemVersionService self;
+    @Autowired
+    private ProblemService problemService;
 
     @Override
     public ProblemVersionResponse createVersion(UUID problemId, ProblemVersionRequest request) {
@@ -73,7 +75,7 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     private ProblemVersion createBlankVersion(UUID problemId, ProblemVersionRequest request) {
         Problem problem = problemRepository.findById(problemId).orElseThrow(() -> new IllegalArgumentException("Problem with id: " + problemId + " not found"));
         int v = problemVersionRepository.findLastVersion(problemId)
-                .map(ProblemVersionRepository.ProblemVersionView::getVersion)
+                .map(ProblemVersion::getVersion)
                 .orElse(0);
 
         ProblemVersion problemVersion = ProblemVersion.builder()
@@ -344,5 +346,75 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     public void checkAuthorSolution(UUID versionId) {
         ProblemVersion problemVersion = problemVersionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Version not found"));
         validationService.verifyAuthorSolution(problemVersion, false);
+    }
+
+    @Override
+    public BranchVersionResponse branchVersion(UUID versionId) {
+        ProblemVersion source = problemVersionRepository.findById(versionId)
+                .orElseThrow(() -> new IllegalArgumentException("Version not found: " + versionId));
+
+        if (source.getStatus() != Status.VERIFIED) {
+            throw new IllegalStateException(
+                    "Can only branch from a VERIFIED version. Current status: " + source.getStatus());
+        }
+
+        boolean draftExists = problemVersionRepository.existsByProblem_IdAndStatus(
+                source.getProblem().getId(), Status.DRAFT);
+        if (draftExists) {
+            throw new IllegalStateException(
+                    "A DRAFT version already exists. Finalize it before creating a new version.");
+        }
+
+        ProblemVersion newVersion = copyVersion(source);
+
+        return BranchVersionResponse.builder()
+                .newVersionId(newVersion.getId())
+                .newVersionNumber(newVersion.getVersion())
+                .branchedFromVersion(source.getVersion())
+                .message("Version " + newVersion.getVersion() + " created from Version " + source.getVersion())
+                .build();
+    }
+
+    @Override
+    public OpenVersionResponse openProblem(UUID problemId) {
+        problemRepository.findById(problemId)
+                .orElseThrow(() -> new IllegalArgumentException("Problem not found: " + problemId));
+
+        Optional<ProblemVersion> draft = problemVersionRepository
+                .findTopByProblem_IdAndStatusOrderByVersionDesc(problemId, Status.DRAFT);
+        if (draft.isPresent()) {
+            return OpenVersionResponse.builder()
+                    .versionId(draft.get().getId())
+                    .versionNumber(draft.get().getVersion())
+                    .status("DRAFT")
+                    .isReadOnly(false)
+                    .autoCreated(false)
+                    .build();
+        }
+
+        Optional<ProblemVersion> verified = problemVersionRepository
+                .findTopByProblem_IdAndStatusOrderByVersionDesc(problemId, Status.VERIFIED);
+        if (verified.isPresent()) {
+            return OpenVersionResponse.builder()
+                    .versionId(verified.get().getId())
+                    .versionNumber(verified.get().getVersion())
+                    .status("VERIFIED")
+                    .isReadOnly(true)
+                    .autoCreated(false)
+                    .build();
+        }
+
+        ProblemVersion first = createBlankVersion(problemId, ProblemVersionRequest.builder()
+                .timeLimitMs(1000L)
+                .memoryLimitMb(256L)
+                .build());
+
+        return OpenVersionResponse.builder()
+                .versionId(first.getId())
+                .versionNumber(1)
+                .status("DRAFT")
+                .isReadOnly(false)
+                .autoCreated(true)
+                .build();
     }
 }

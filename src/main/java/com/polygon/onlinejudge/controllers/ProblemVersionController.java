@@ -3,10 +3,13 @@ package com.polygon.onlinejudge.controllers;
 import com.polygon.onlinejudge.dto.judge.Judge0SubmissionResponse;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.BranchVersionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.OpenVersionResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
+import com.polygon.onlinejudge.dto.snapshot.SnapshotResponse;
 import com.polygon.onlinejudge.dto.test.TestCaseResponse;
 import com.polygon.onlinejudge.services.ProblemVersionService;
 import com.polygon.onlinejudge.services.SnapshotService;
@@ -97,19 +100,35 @@ public class ProblemVersionController {
         return ResponseEntity.ok(problemVersionService.testCode(solutionId, test));
     }
 
-    @PostMapping("/problems/{problemId}/versions/{versionId}/snapshot")
-    public ResponseEntity<Void> createSnapshot(@PathVariable UUID problemId, @PathVariable UUID versionId) {
-        snapshotService.createSnapshot(problemId, versionId);
+    @PostMapping("/problems/{problemId}/versions/snapshot")
+    public ResponseEntity<Void> createSnapshot(@PathVariable UUID problemId) {
+        snapshotService.createSnapshot(problemId);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/problems/{problemId}/versions/{versionId}/snapshot")
-    public ResponseEntity<UUID> getSnapshot(@PathVariable UUID problemId, @PathVariable UUID versionId) {
-        return ResponseEntity.ok(snapshotService.getSnapshot(problemId, versionId));
+    @GetMapping("/problems/{problemId}/snapshots")
+    public ResponseEntity<List<SnapshotResponse>> getAllSnapshots(@PathVariable UUID problemId) {
+        return ResponseEntity.ok(snapshotService.getAllSnapshots(problemId));
+    }
+
+    @PatchMapping("/problems/{problemId}/snapshots/commit-changes")
+    public ResponseEntity<Void> commitChanges(@PathVariable UUID problemId) {
+        snapshotService.commitChanges(problemId);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/versions/{versionId}/test-cases")
     public ResponseEntity<List<TestCaseResponse>> getExampleTestCases(@PathVariable UUID versionId) {
         return ResponseEntity.ok(problemVersionService.getExampleTestCases(versionId));
+    }
+
+    @PostMapping("/problems/{problemId}/open")
+    public ResponseEntity<OpenVersionResponse> openProblem(@PathVariable UUID problemId) {
+        return ResponseEntity.ok(problemVersionService.openProblem(problemId));
+    }
+
+    @PostMapping("/versions/{versionId}/branch")
+    public ResponseEntity<BranchVersionResponse> branchVersion(@PathVariable UUID versionId) {
+        return ResponseEntity.ok(problemVersionService.branchVersion(versionId));
     }
 }

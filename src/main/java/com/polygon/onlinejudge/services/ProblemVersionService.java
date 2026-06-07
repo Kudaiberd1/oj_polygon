@@ -3,6 +3,8 @@ package com.polygon.onlinejudge.services;
 import com.polygon.onlinejudge.dto.judge.Judge0SubmissionResponse;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.BranchVersionResponse;
+import com.polygon.onlinejudge.dto.problemVersion.OpenVersionResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementRequest;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemStatementResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionRequest;
@@ -41,4 +43,8 @@ public interface ProblemVersionService {
     List<TestCaseResponse> getExampleTestCases(UUID versionId);
 
     void checkAuthorSolution(UUID versionId);
+
+    BranchVersionResponse branchVersion(UUID versionId);
+
+    OpenVersionResponse openProblem(UUID problemId);
 }

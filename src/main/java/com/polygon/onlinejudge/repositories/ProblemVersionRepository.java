@@ -11,22 +11,20 @@ import java.util.UUID;
 
 public interface ProblemVersionRepository extends JpaRepository<ProblemVersion, UUID> {
 
-    interface ProblemVersionView {
-        UUID getId();
-        Status getStatus();
-        Integer getVersion();
-    }
-
     Optional<ProblemVersion> findFirstByProblem_IdOrderByVersionDesc(UUID problemId);
 
     @Query("""
-       SELECT pv.id AS id, pv.version AS version, pv.status AS status
+       SELECT pv
        FROM ProblemVersion pv
        WHERE pv.problem.id = :problemId AND pv.status = 'VERIFIED'
        ORDER BY pv.version DESC
        LIMIT 1
        """)
-    Optional<ProblemVersionView> findLastVersion(UUID problemId);
+    Optional<ProblemVersion> findLastVersion(UUID problemId);
 
     List<ProblemVersion> findAllByProblem_Id(UUID problemId);
+
+    Optional<ProblemVersion> findTopByProblem_IdAndStatusOrderByVersionDesc(UUID problemId, Status status);
+
+    boolean existsByProblem_IdAndStatus(UUID problemId, Status status);
 }
