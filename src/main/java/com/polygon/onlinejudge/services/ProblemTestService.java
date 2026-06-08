@@ -21,4 +21,6 @@ public interface ProblemTestService {
     void deleteTestGroup(UUID testGroupId);
 
     void makeExampleTestCase(UUID testGroupId, Long testCaseId);
+
+    void updateGroupScore(UUID testGroupId, Integer score);
 }

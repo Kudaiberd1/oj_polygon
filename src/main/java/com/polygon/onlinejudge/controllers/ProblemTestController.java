@@ -58,6 +58,12 @@ public class ProblemTestController {
         return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
     }
 
+    @PatchMapping("/{testGroupId}")
+    public ResponseEntity<Void> updateTestGroupScore(@PathVariable UUID testGroupId, @RequestParam Integer score) {
+        problemTestService.updateGroupScore(testGroupId, score);
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping("/{testGroupId}/tests/{testCaseId}")
     public ResponseEntity<Void> makeTestCaseAsExample(@PathVariable UUID testGroupId, @PathVariable Long testCaseId) {
         problemTestService.makeExampleTestCase(testGroupId, testCaseId);

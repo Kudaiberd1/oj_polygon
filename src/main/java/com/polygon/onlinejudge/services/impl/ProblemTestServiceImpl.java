@@ -120,4 +120,12 @@ public class ProblemTestServiceImpl implements ProblemTestService {
         testCase.setIsExample(testCase.getIsExample() == null || !testCase.getIsExample());
         testCaseRepository.save(testCase);
     }
+
+    @Override
+    public void updateGroupScore(UUID testGroupId, Integer score) {
+        TestGroup testGroup = testGroupRepository.findById(testGroupId).orElseThrow(() -> new IllegalArgumentException("TestGroup not found"));
+
+        testGroup.setPoints(score);
+        testGroupRepository.save(testGroup);
+    }
 }
