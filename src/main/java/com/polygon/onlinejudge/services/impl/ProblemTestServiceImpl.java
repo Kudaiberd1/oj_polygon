@@ -123,8 +123,14 @@ public class ProblemTestServiceImpl implements ProblemTestService {
 
     @Override
     public void updateGroupScore(UUID testGroupId, Integer score) {
-        TestGroup testGroup = testGroupRepository.findById(testGroupId).orElseThrow(() -> new IllegalArgumentException("TestGroup not found"));
-
+        if (score == null || score <= 0) {
+            throw new IllegalArgumentException("Score must be greater than 0");
+        }
+        TestGroup testGroup = testGroupRepository.findById(testGroupId)
+                .orElseThrow(() -> new IllegalArgumentException("TestGroup not found"));
+        if (problemVersionPolicy.checkVersion(testGroup.getVersion())) {
+            throw new IllegalStateException("Cannot modify a VERIFIED version");
+        }
         testGroup.setPoints(score);
         testGroupRepository.save(testGroup);
     }
