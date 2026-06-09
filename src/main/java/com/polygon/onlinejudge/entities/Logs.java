@@ -40,6 +40,8 @@ public class Logs {
     private Long memory;
     private Long orderId;
     private UUID testGroupId;
+    @Column(name = "test_case_id")
+    private Long testCaseId;
     private LocalDateTime verifiedAt;
 
     @PrePersist

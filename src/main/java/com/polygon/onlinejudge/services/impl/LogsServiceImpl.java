@@ -100,6 +100,12 @@ public class LogsServiceImpl implements LogsService {
         return new CompletionStatusItem(complete, passed + " / " + total + " tests passed");
     }
 
+    @Override
+    @Transactional
+    public void clearValidationLogs(UUID versionId) {
+        logsRepository.deleteAllByVersion_Id(versionId);
+    }
+
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
     }

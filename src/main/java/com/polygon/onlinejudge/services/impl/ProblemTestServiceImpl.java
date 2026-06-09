@@ -11,6 +11,7 @@ import com.polygon.onlinejudge.policy.ProblemVersionPolicy;
 import com.polygon.onlinejudge.repositories.ProblemVersionRepository;
 import com.polygon.onlinejudge.repositories.TestCaseRepository;
 import com.polygon.onlinejudge.repositories.TestGroupRepository;
+import com.polygon.onlinejudge.services.LogsService;
 import com.polygon.onlinejudge.services.ProblemTestService;
 import com.polygon.onlinejudge.services.S3Service;
 import lombok.RequiredArgsConstructor;
@@ -31,9 +32,10 @@ public class ProblemTestServiceImpl implements ProblemTestService {
     private final TestGroupMapper testGroupMapper;
     private final S3Service s3Service;
     private final TestCaseRepository testCaseRepository;
+    private final LogsService logsService;
 
     @Override
-    public void setProblemScore(TestGroupRequest request, UUID versionId) {
+    public void createTestGroup(TestGroupRequest request, UUID versionId) {
         ProblemVersion version = versionRepository.findById(versionId).orElseThrow(() -> new IllegalArgumentException("Version not found"));
         problemVersionPolicy.checkVersion(version);
 
@@ -62,6 +64,8 @@ public class ProblemTestServiceImpl implements ProblemTestService {
         if (req.getInput() == null || req.getInput().isBlank()) {
             throw new IllegalArgumentException("Input is empty");
         }
+
+        logsService.clearValidationLogs(version.getId());
 
         int nextOrder = testCaseRepository.countTestCasesByGroup_Id(group.getId());
 
@@ -95,6 +99,8 @@ public class ProblemTestServiceImpl implements ProblemTestService {
 
         problemVersionPolicy.checkVersion(testGroup.getVersion());
 
+        logsService.clearValidationLogs(testGroup.getVersion().getId());
+
         deleteS3Files(testCase);
         testCaseRepository.delete(testCase);
     }
@@ -104,6 +110,8 @@ public class ProblemTestServiceImpl implements ProblemTestService {
         TestGroup testGroup = testGroupRepository.findById(testGroupId).orElseThrow(() -> new IllegalArgumentException("TestGroup not found"));
 
         problemVersionPolicy.checkVersion(testGroup.getVersion());
+
+        logsService.clearValidationLogs(testGroup.getVersion().getId());
 
         testCaseRepository.findTestCasesByGroup_Id(testGroupId).forEach(this::deleteS3Files);
         testGroupRepository.delete(testGroup);

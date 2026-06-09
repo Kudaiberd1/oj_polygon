@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface ProblemTestService {
 
-    void setProblemScore(TestGroupRequest request, UUID versionId);
+    void createTestGroup(TestGroupRequest request, UUID versionId);
 
     List<TestGroupResponse> getAllTestGroups(UUID versionId);
 

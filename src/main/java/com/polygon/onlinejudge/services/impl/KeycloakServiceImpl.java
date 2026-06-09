@@ -21,6 +21,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -253,6 +254,31 @@ public class KeycloakServiceImpl implements KeycloakService {
         restTemplate.exchange(deleteUrl, HttpMethod.DELETE, request, Void.class);
     }
 
+
+    @Override
+    public void changePassword(String email, String currentPassword, String newPassword) {
+        getAuthResponse(email, currentPassword); // throws UnauthorizedException if wrong
+
+        String adminToken = getAdminToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(adminToken);
+
+        ResponseEntity<List> response = restTemplate.exchange(
+                keycloakUrl + "/admin/realms/online_judge/users?email=" + email + "&exact=true",
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                List.class
+        );
+
+        List<Map<String, Object>> users = response.getBody();
+        if (users == null || users.isEmpty()) {
+            throw new IllegalArgumentException("User not found in Keycloak: " + email);
+        }
+
+        String userId = (String) users.get(0).get("id");
+        setPassword(userId, newPassword, adminToken);
+    }
 
     public String buildTokenEndpoint(String endpointType){
         String base = keycloakUri;

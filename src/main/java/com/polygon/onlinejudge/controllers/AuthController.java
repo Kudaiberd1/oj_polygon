@@ -1,8 +1,10 @@
 package com.polygon.onlinejudge.controllers;
 
 import com.polygon.onlinejudge.dto.keycloak.AuthResponse;
+import com.polygon.onlinejudge.dto.keycloak.ChangePasswordRequest;
 import com.polygon.onlinejudge.dto.keycloak.RegisterRequest;
 import com.polygon.onlinejudge.dto.keycloak.UserAuthRequest;
+import com.polygon.onlinejudge.facade.AuthFacade;
 import com.polygon.onlinejudge.services.KeycloakService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.util.Map;
 public class AuthController {
 
     private final KeycloakService keycloakService;
+    private final AuthFacade authFacade;
 
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AuthResponse> login(@RequestBody @Valid UserAuthRequest userAuthRequest){
@@ -39,5 +42,11 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(@RequestParam("token") String token){
         return ResponseEntity.ok(keycloakService.refreshToken(token));
+    }
+
+    @PatchMapping("/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+        keycloakService.changePassword(authFacade.getEmail(), request.getCurrentPassword(), request.getNewPassword());
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 }

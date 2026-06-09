@@ -31,7 +31,7 @@ public class LogsController {
 
     @GetMapping("/author-solution/{problemVersionId}")
     public ResponseEntity<List<AuthorSolutionLogsResponse>> getAuthorSolutionLogs(@PathVariable UUID problemVersionId) {
-return ResponseEntity.ok(logsService.getAuthorSolutionLogs(problemVersionId, authFacade.getEmail()));
+        return ResponseEntity.ok(logsService.getAuthorSolutionLogs(problemVersionId, authFacade.getEmail()));
     }
 
     @GetMapping("/completion-status/{versionId}")

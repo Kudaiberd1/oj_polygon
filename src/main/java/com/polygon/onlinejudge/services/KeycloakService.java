@@ -14,4 +14,6 @@ public interface KeycloakService {
     void registerUser(RegisterRequest request);
 
     @Nullable AuthResponse refreshToken(String refreshToken);
+
+    void changePassword(String email, String currentPassword, String newPassword);
 }

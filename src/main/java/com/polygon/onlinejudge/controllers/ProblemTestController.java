@@ -20,8 +20,8 @@ public class ProblemTestController {
     private final ProblemTestService problemTestService;
 
     @PostMapping("/version/{versionId}")
-    public ResponseEntity<Void> setProblemScore(@RequestBody TestGroupRequest request, @PathVariable("versionId") UUID versionId) {
-        problemTestService.setProblemScore(request, versionId);
+    public ResponseEntity<Void> createTestGroup(@RequestBody TestGroupRequest request, @PathVariable("versionId") UUID versionId) {
+        problemTestService.createTestGroup(request, versionId);
 
         return ResponseEntity.ok().build();
     }

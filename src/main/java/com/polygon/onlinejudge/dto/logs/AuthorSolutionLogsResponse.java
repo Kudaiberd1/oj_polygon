@@ -9,11 +9,12 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthorSolutionLogsResponse {
+    private Long testCaseId;
     private Long orderId;
     private UUID groupId;
     private String status;
     private String time;
-    private long memory;
+    private Long memory;
     private String message;
     private String log;
 }

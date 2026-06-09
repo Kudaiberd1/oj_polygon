@@ -15,4 +15,6 @@ public interface LogsService {
     List<AuthorSolutionLogsResponse> getAuthorSolutionLogs(UUID problemVersionId, String email);
 
     CompletionStatusResponse getCompletionStatus(UUID versionId, String email);
+
+    void clearValidationLogs(UUID versionId);
 }
