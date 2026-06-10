@@ -27,4 +27,6 @@ public interface ProblemVersionRepository extends JpaRepository<ProblemVersion, 
     Optional<ProblemVersion> findTopByProblem_IdAndStatusOrderByVersionDesc(UUID problemId, Status status);
 
     boolean existsByProblem_IdAndStatus(UUID problemId, Status status);
+
+    int countByProblem_Id(UUID problemId);
 }

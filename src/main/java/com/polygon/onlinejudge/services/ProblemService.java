@@ -3,6 +3,7 @@ package com.polygon.onlinejudge.services;
 import com.polygon.onlinejudge.dto.pagination.PaginationParams;
 import com.polygon.onlinejudge.dto.problem.ProblemRequest;
 import com.polygon.onlinejudge.dto.problem.ProblemResponse;
+import com.polygon.onlinejudge.dto.problem.ProblemSummaryResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
 import org.springframework.data.domain.Page;
 
@@ -11,7 +12,7 @@ import java.util.UUID;
 
 public interface ProblemService {
 
-    Page<ProblemResponse> getAllProblems(String email, PaginationParams paginationParams);
+    Page<ProblemSummaryResponse> getAllProblems(String email, PaginationParams paginationParams);
 
     ProblemResponse getById(UUID id, String email);
 

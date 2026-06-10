@@ -4,6 +4,7 @@ import com.polygon.onlinejudge.context.UserContext;
 import com.polygon.onlinejudge.dto.pagination.PaginationParams;
 import com.polygon.onlinejudge.dto.problem.ProblemRequest;
 import com.polygon.onlinejudge.dto.problem.ProblemResponse;
+import com.polygon.onlinejudge.dto.problem.ProblemSummaryResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
 import com.polygon.onlinejudge.entities.Problem;
 import com.polygon.onlinejudge.entities.ProblemVersion;
@@ -37,10 +38,31 @@ public class ProblemServiceImpl implements ProblemService {
     private final UserContext userContext;
 
     @Override
-    public Page<ProblemResponse> getAllProblems(String email, PaginationParams paginationParams) {
+    public Page<ProblemSummaryResponse> getAllProblems(String email, PaginationParams paginationParams) {
         User user = userContext.getUser(email);
         return problemRepository.findAllByOwnerId(user.getId(), paginationParams.toPageable())
-                .map(problemMapper::toDto);
+                .map(problem -> {
+                    int total = problemVersionRepository.countByProblem_Id(problem.getId());
+                    return problemVersionRepository.findFirstByProblem_IdOrderByVersionDesc(problem.getId())
+                            .map(latest -> ProblemSummaryResponse.builder()
+                                    .id(problem.getId())
+                                    .title(problem.getTitle())
+                                    .ownerId(problem.getOwnerId())
+                                    .createdAt(problem.getCreatedAt())
+                                    .totalVersions(total)
+                                    .latestVersionNumber(latest.getVersion())
+                                    .latestVersionStatus(latest.getStatus() != null ? latest.getStatus().name() : null)
+                                    .build())
+                            .orElseGet(() -> ProblemSummaryResponse.builder()
+                                    .id(problem.getId())
+                                    .title(problem.getTitle())
+                                    .ownerId(problem.getOwnerId())
+                                    .createdAt(problem.getCreatedAt())
+                                    .totalVersions(0)
+                                    .latestVersionNumber(null)
+                                    .latestVersionStatus(null)
+                                    .build());
+                });
     }
 
     @Override

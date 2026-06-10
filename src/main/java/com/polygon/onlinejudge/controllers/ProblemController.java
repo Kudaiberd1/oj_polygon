@@ -4,6 +4,7 @@ import com.polygon.onlinejudge.dto.pagination.PaginatedResponse;
 import com.polygon.onlinejudge.dto.pagination.PaginationParams;
 import com.polygon.onlinejudge.dto.problem.ProblemRequest;
 import com.polygon.onlinejudge.dto.problem.ProblemResponse;
+import com.polygon.onlinejudge.dto.problem.ProblemSummaryResponse;
 import com.polygon.onlinejudge.dto.problemVersion.ProblemVersionResponse;
 import com.polygon.onlinejudge.facade.AuthFacade;
 import com.polygon.onlinejudge.services.ProblemService;
@@ -26,7 +27,7 @@ public class ProblemController {
     private final AuthFacade authFacade;
 
     @GetMapping()
-    public ResponseEntity<PaginatedResponse<ProblemResponse>> getAllProblems(@ParameterObject @ModelAttribute PaginationParams paginationParams){
+    public ResponseEntity<PaginatedResponse<ProblemSummaryResponse>> getAllProblems(@ParameterObject @ModelAttribute PaginationParams paginationParams){
         var problems = problemService.getAllProblems(authFacade.getEmail(), paginationParams);
 
         return ResponseEntity.ok(new PaginatedResponse<>(problems));
