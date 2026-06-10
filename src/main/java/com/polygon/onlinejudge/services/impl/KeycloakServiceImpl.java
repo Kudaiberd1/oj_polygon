@@ -64,7 +64,11 @@ public class KeycloakServiceImpl implements KeycloakService {
             ResponseEntity<KeycloakTokenResponse> response = restTemplate.postForEntity(tokenUrl, request, KeycloakTokenResponse.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-
+                userRepository.findByEmail(email).orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setEmail(email);
+                    return userRepository.save(newUser);
+                });
                 return mapTokenResponse(response.getBody());
             } else {
                 throw new IllegalArgumentException("Failed to get AuthResponse");
