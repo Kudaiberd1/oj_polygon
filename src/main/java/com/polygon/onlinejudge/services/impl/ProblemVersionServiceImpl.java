@@ -2,6 +2,7 @@ package com.polygon.onlinejudge.services.impl;
 
 import com.polygon.onlinejudge.dto.judge.Judge0SubmissionRequest;
 import com.polygon.onlinejudge.dto.judge.Judge0SubmissionResponse;
+import com.polygon.onlinejudge.dto.judge.TestCodeRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
 import com.polygon.onlinejudge.dto.problemVersion.BranchVersionResponse;
@@ -315,25 +316,20 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
 
 
     @Override
-    public Judge0SubmissionResponse testCode(UUID solutionId, String test) {
-        AuthorSolution solutionCode = authorSolutionRepository.findById(solutionId).orElseThrow(() -> new IllegalArgumentException("Solution code not found"));
-
-        int languageId = switch (solutionCode.getLanguage()) {
+    public Judge0SubmissionResponse testCode(TestCodeRequest testCodeRequest) {
+        int languageId = switch (testCodeRequest.getLanguage()) {
             case JAVA -> 62;
             case CPP -> 54;
             case PY -> 71;
         };
-        String sourceCode = s3Service.getInput(solutionCode.getSourceCode());
 
         Judge0SubmissionRequest request = Judge0SubmissionRequest.builder()
-                .source_code(sourceCode)
-                .stdin(test)
+                .source_code(testCodeRequest.getSourceCode())
+                .stdin(testCodeRequest.getStdin() != null ? testCodeRequest.getStdin() : "")
                 .language_id(languageId)
                 .build();
 
-        Judge0SubmissionResponse response = judge0ClientService.runSubmission(request);
-
-        return response;
+        return judge0ClientService.runSubmission(request);
     }
 
     @Override

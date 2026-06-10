@@ -1,6 +1,7 @@
 package com.polygon.onlinejudge.controllers;
 
 import com.polygon.onlinejudge.dto.judge.Judge0SubmissionResponse;
+import com.polygon.onlinejudge.dto.judge.TestCodeRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
 import com.polygon.onlinejudge.dto.problemVersion.BranchVersionResponse;
@@ -95,9 +96,9 @@ public class ProblemVersionController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/test-code/{solutionId}")
-    public ResponseEntity<Judge0SubmissionResponse> testCode(@PathVariable UUID solutionId, @RequestParam String test) {
-        return ResponseEntity.ok(problemVersionService.testCode(solutionId, test));
+    @PostMapping("/test-code")
+    public ResponseEntity<Judge0SubmissionResponse> testCode(@RequestBody @jakarta.validation.Valid TestCodeRequest request) {
+        return ResponseEntity.ok(problemVersionService.testCode(request));
     }
 
     @PostMapping("/problems/{problemId}/versions/snapshot")

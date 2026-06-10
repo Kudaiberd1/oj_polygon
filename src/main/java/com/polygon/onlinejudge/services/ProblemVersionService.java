@@ -1,6 +1,7 @@
 package com.polygon.onlinejudge.services;
 
 import com.polygon.onlinejudge.dto.judge.Judge0SubmissionResponse;
+import com.polygon.onlinejudge.dto.judge.TestCodeRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionRequest;
 import com.polygon.onlinejudge.dto.problem.AuthorSolutionResponse;
 import com.polygon.onlinejudge.dto.problemVersion.BranchVersionResponse;
@@ -38,7 +39,7 @@ public interface ProblemVersionService {
 
     void updateAuthorSolution(UUID versionId, AuthorSolutionRequest request);
 
-    Judge0SubmissionResponse testCode(UUID solutionId, String test);
+    Judge0SubmissionResponse testCode(TestCodeRequest request);
 
     List<TestCaseResponse> getExampleTestCases(UUID versionId);
 
