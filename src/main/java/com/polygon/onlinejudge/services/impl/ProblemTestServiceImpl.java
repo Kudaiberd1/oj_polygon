@@ -1,5 +1,6 @@
 package com.polygon.onlinejudge.services.impl;
 
+import com.polygon.onlinejudge.dto.test.ExampleTestCaseRequest;
 import com.polygon.onlinejudge.dto.test.TestCaseRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupResponse;
@@ -123,9 +124,12 @@ public class ProblemTestServiceImpl implements ProblemTestService {
     }
 
     @Override
-    public void makeExampleTestCase(UUID testGroupId, Long testCaseId) {
+    public void makeExampleTestCase(UUID testGroupId, Long testCaseId, ExampleTestCaseRequest request) {
         TestCase testCase = testCaseRepository.findByGroup_IdAndId(testGroupId, testCaseId).orElseThrow(() -> new IllegalArgumentException("TestCase not found"));
         testCase.setIsExample(testCase.getIsExample() == null || !testCase.getIsExample());
+        if(request.getCustomOutput() != null) {
+            testCase.setCustomOutput(request.getCustomOutput());
+        }
         testCaseRepository.save(testCase);
     }
 

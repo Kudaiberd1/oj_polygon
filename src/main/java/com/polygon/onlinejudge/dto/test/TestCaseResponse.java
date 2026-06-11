@@ -9,5 +9,6 @@ public class TestCaseResponse {
     private String inputPath;
     private String outputPath;
     private Boolean isExample;
+    private String customOutput;
 }
 

@@ -1,5 +1,6 @@
 package com.polygon.onlinejudge.controllers;
 
+import com.polygon.onlinejudge.dto.test.ExampleTestCaseRequest;
 import com.polygon.onlinejudge.dto.test.TestCaseRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupResponse;
@@ -65,8 +66,8 @@ public class ProblemTestController {
     }
 
     @PatchMapping("/{testGroupId}/tests/{testCaseId}")
-    public ResponseEntity<Void> makeTestCaseAsExample(@PathVariable UUID testGroupId, @PathVariable Long testCaseId) {
-        problemTestService.makeExampleTestCase(testGroupId, testCaseId);
+    public ResponseEntity<Void> makeTestCaseAsExample(@PathVariable UUID testGroupId, @PathVariable Long testCaseId, @RequestBody ExampleTestCaseRequest request) {
+        problemTestService.makeExampleTestCase(testGroupId, testCaseId, request);
         return ResponseEntity.ok().build();
     }
 }

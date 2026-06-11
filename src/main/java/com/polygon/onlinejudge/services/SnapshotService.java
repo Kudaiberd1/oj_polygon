@@ -8,7 +8,7 @@ import java.util.UUID;
 public interface SnapshotService {
     UUID getSnapshot(UUID problemId, UUID versionId);
 
-    void createSnapshot(UUID problemId);
+    void createSnapshot(UUID problemId, String createdBy);
 
     List<SnapshotResponse> getAllSnapshots(UUID problemId);
 

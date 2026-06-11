@@ -40,6 +40,8 @@ public class KeycloakServiceImpl implements KeycloakService {
     private String clientId;
     @Value("${spring.application.jwt.keycloak.client-secret}")
     private String clientSecret;
+    @Value("${spring.application.jwt.keycloak.realm}")
+    private String realm;
 
     @Override
     public AuthResponse getAuthResponse(String email, String password) {
@@ -109,7 +111,7 @@ public class KeycloakServiceImpl implements KeycloakService {
 
         try {
             ResponseEntity<Void> response = restTemplate.postForEntity(
-                    keycloakUrl+"/admin/realms/online_judge/users",
+                    keycloakUrl+"/admin/realms/"+realm+"/users",
                     entity,
                     Void.class
             );
@@ -222,7 +224,7 @@ public class KeycloakServiceImpl implements KeycloakService {
                 new HttpEntity<>(body, headers);
 
         restTemplate.put(
-                keycloakUrl+"/admin/realms/online_judge/users/" + userId + "/reset-password",
+                keycloakUrl+"/admin/realms/"+realm+"/users/" + userId + "/reset-password",
                 request
         );
     }
@@ -253,7 +255,7 @@ public class KeycloakServiceImpl implements KeycloakService {
 
         HttpEntity<Void> request = new HttpEntity<>(headers);
 
-        String deleteUrl = keycloakUrl+"/admin/realms/online_judge/users/"+userId;
+        String deleteUrl = keycloakUrl+"/admin/realms/"+realm+"/users/"+userId;
 
         restTemplate.exchange(deleteUrl, HttpMethod.DELETE, request, Void.class);
     }
@@ -261,7 +263,7 @@ public class KeycloakServiceImpl implements KeycloakService {
 
     @Override
     public void changePassword(String email, String currentPassword, String newPassword) {
-        getAuthResponse(email, currentPassword); // throws UnauthorizedException if wrong
+        getAuthResponse(email, currentPassword);
 
         String adminToken = getAdminToken();
 
@@ -269,7 +271,7 @@ public class KeycloakServiceImpl implements KeycloakService {
         headers.setBearerAuth(adminToken);
 
         ResponseEntity<List> response = restTemplate.exchange(
-                keycloakUrl + "/admin/realms/online_judge/users?email=" + email + "&exact=true",
+                keycloakUrl + "/admin/realms/online_judge/"+realm+"?email=" + email + "&exact=true",
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
                 List.class

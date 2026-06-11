@@ -306,6 +306,7 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
                         .problemVersion(newVersion)
                         .orderId(testCase.getOrderId())
                         .inputPath(newInputPath)
+                        .isExample(testCase.getIsExample())
                         .build());
             }
             testCaseRepository.saveAll(newTestCases);

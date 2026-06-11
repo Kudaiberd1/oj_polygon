@@ -36,4 +36,5 @@ public class TestCase {
     private String outputPath;
 
     private Boolean isExample;
+    private String customOutput;
 }

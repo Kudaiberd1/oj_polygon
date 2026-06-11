@@ -14,6 +14,7 @@ import com.polygon.onlinejudge.dto.snapshot.SnapshotResponse;
 import com.polygon.onlinejudge.dto.test.TestCaseResponse;
 import com.polygon.onlinejudge.services.ProblemVersionService;
 import com.polygon.onlinejudge.services.SnapshotService;
+import com.polygon.onlinejudge.facade.AuthFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,7 @@ public class ProblemVersionController {
 
     private final ProblemVersionService problemVersionService;
     private final SnapshotService snapshotService;
+    private final AuthFacade authFacade;
 
     @PostMapping("/problems/{problemId}/versions")
     public ResponseEntity<ProblemVersionResponse> createVersion(@PathVariable UUID problemId, @RequestBody ProblemVersionRequest request) {
@@ -103,7 +105,7 @@ public class ProblemVersionController {
 
     @PostMapping("/problems/{problemId}/versions/snapshot")
     public ResponseEntity<Void> createSnapshot(@PathVariable UUID problemId) {
-        snapshotService.createSnapshot(problemId);
+        snapshotService.createSnapshot(problemId, authFacade.getEmail());
         return ResponseEntity.ok().build();
     }
 

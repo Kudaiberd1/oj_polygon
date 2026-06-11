@@ -1,5 +1,6 @@
 package com.polygon.onlinejudge.services;
 
+import com.polygon.onlinejudge.dto.test.ExampleTestCaseRequest;
 import com.polygon.onlinejudge.dto.test.TestCaseRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupRequest;
 import com.polygon.onlinejudge.dto.test.TestGroupResponse;
@@ -20,7 +21,7 @@ public interface ProblemTestService {
 
     void deleteTestGroup(UUID testGroupId);
 
-    void makeExampleTestCase(UUID testGroupId, Long testCaseId);
+    void makeExampleTestCase(UUID testGroupId, Long testCaseId, ExampleTestCaseRequest request);
 
     void updateGroupScore(UUID testGroupId, Integer score);
 }
