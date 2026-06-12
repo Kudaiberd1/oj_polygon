@@ -1,8 +1,7 @@
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Gradle puts jar in build/libs/
 COPY build/libs/*.jar app.jar
 
 RUN addgroup -S polygon && \
