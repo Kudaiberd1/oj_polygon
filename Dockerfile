@@ -2,7 +2,8 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-COPY target/onlinejudge-polygon-*.jar app.jar
+# Gradle puts jar in build/libs/
+COPY build/libs/*.jar app.jar
 
 RUN addgroup -S polygon && \
     adduser -S polygon -G polygon
