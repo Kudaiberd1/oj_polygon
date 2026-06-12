@@ -38,22 +38,34 @@ jobs:
             ghcr.io/kudaiberd1/oj_polygon:latest
             ghcr.io/kudaiberd1/oj_polygon:${{ github.sha }}
 
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TS_AUTH_KEY }}
+          hostname: github-actions-deploy
+          version: latest
+
+      - name: Wait for Tailscale
+        run: sleep 5
+
       - name: Deploy to G-Block VM
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.GBLOCK_HOST }}
           username: ubuntu
           key: ${{ secrets.GBLOCK_SSH_KEY }}
+          timeout: 60s
           script: |
             set -e
-
-            cd /opt/polygon
 
             echo "==> Pulling latest image..."
             docker pull ghcr.io/kudaiberd1/oj_polygon:latest
 
-            echo "==> Restarting backend..."
+            echo "==> Stopping old container..."
+            cd /opt/polygon
             docker compose down backend || true
+
+            echo "==> Starting new container..."
             docker compose up -d backend
 
             echo "==> Waiting for startup..."
@@ -61,5 +73,5 @@ jobs:
 
             echo "==> Health check..."
             curl -sf http://localhost:8000/actuator/health \
-              && echo "Deploy successful!" \
-              || (echo "Health check failed!" && exit 1)
+              && echo "✅ Deploy successful!" \
+              || (echo "❌ Health check failed!" && exit 1)
