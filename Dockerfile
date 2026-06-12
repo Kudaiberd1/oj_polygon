@@ -8,7 +8,7 @@ RUN addgroup -S polygon && \
     adduser -S polygon -G polygon
 USER polygon
 
-EXPOSE 8080
+EXPOSE 8000
 
 ENTRYPOINT ["java", \
   "-Dspring.profiles.active=prod", \
