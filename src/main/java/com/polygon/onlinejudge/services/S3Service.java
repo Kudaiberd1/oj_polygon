@@ -6,4 +6,5 @@ public interface S3Service {
     String getText(String key);
     String getInput(String key);
     void delete(String key);
+    byte[] getBytes(String key);
 }

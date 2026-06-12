@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/polygon/auth/**",
+                                "/api/v1/polygon/files/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/auth/**",

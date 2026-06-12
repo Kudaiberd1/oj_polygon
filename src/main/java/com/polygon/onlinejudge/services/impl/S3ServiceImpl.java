@@ -69,6 +69,20 @@ public class S3ServiceImpl implements S3Service {
         }
     }
 
+    @Override
+    public byte[] getBytes(String key) {
+        try {
+            String normalizedKey = normalizeKey(key);
+            ResponseBytes<GetObjectResponse> response = s3Client.getObjectAsBytes(b -> b
+                    .bucket(bucketName)
+                    .key(normalizedKey)
+            );
+            return response.asByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get bytes from S3. key=" + key, e);
+        }
+    }
+
     @Value("${seaweedfs.endpoint}")
     private String seaweedfsEndpoint;
 
