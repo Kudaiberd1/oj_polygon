@@ -37,7 +37,7 @@ public class S3ServiceImpl implements S3Service {
                 .build();
 
         s3Client.putObject(req, RequestBody.fromBytes(bytes));
-        return getFileUrl(key);
+        return key;
     }
 
     @Override
