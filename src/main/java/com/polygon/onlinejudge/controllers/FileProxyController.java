@@ -36,7 +36,7 @@ public class FileProxyController {
                 StandardCharsets.UTF_8
         );
 
-        if (key.isEmpty()) {
+        if (key.isEmpty() || key.contains("..")) {
             return ResponseEntity.badRequest().build();
         }
 
