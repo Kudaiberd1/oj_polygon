@@ -15,7 +15,7 @@ import java.util.UUID;
 public class ProblemSummaryResponse {
     private UUID id;
     private String title;
-    private UUID ownerId;
+    private String email;
     private LocalDateTime createdAt;
     private Integer totalVersions;
     private Integer latestVersionNumber;

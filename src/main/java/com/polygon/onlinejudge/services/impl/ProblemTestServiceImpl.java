@@ -68,7 +68,7 @@ public class ProblemTestServiceImpl implements ProblemTestService {
 
         logsService.clearValidationLogs(version.getId());
 
-        int nextOrder = testCaseRepository.countTestCasesByGroup_Id(group.getId());
+        long nextOrder = testCaseRepository.findMaxOrderIdByGroupId(group.getId()) + 1;
 
         UUID problemId = group.getVersion().getProblem().getId();
         UUID versionId = group.getVersion().getId();

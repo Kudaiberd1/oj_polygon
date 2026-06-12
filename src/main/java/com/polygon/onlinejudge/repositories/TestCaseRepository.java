@@ -2,6 +2,8 @@ package com.polygon.onlinejudge.repositories;
 
 import com.polygon.onlinejudge.entities.TestCase;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +13,9 @@ public interface TestCaseRepository extends JpaRepository<TestCase, Long> {
     Optional<TestCase> findByGroup_IdAndId(UUID groupId, Long id);
 
     int countTestCasesByGroup_Id(UUID groupId);
+
+    @Query("SELECT COALESCE(MAX(tc.orderId), -1) FROM TestCase tc WHERE tc.group.id = :groupId")
+    long findMaxOrderIdByGroupId(@Param("groupId") UUID groupId);
 
     int countByGroup_Version_Id(UUID versionId);
 
