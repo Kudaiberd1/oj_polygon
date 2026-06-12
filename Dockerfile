@@ -1,26 +1,16 @@
-FROM eclipse-temurin:17-jdk AS build
+FROM eclipse-temurin:17-jre-alpine
+
 WORKDIR /app
 
-COPY gradlew .
-COPY gradle/ gradle/
+COPY target/onlinejudge-polygon-*.jar app.jar
 
-COPY build.gradle.kts settings.gradle.kts ./
-
-RUN chmod +x ./gradlew
-RUN ./gradlew --no-daemon dependencies
-
-COPY src/ src/
-
-RUN ./gradlew --no-daemon bootJar
-
-FROM eclipse-temurin:17-jre AS run
-WORKDIR /app
-
-ENV PORT=8080
-ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
-
-COPY --from=build /app/build/libs/*.jar app.jar
+RUN addgroup -S polygon && \
+    adduser -S polygon -G polygon
+USER polygon
 
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT} -jar app.jar"]
+ENTRYPOINT ["java", \
+  "-Dspring.profiles.active=prod", \
+  "-jar", \
+  "app.jar"]
