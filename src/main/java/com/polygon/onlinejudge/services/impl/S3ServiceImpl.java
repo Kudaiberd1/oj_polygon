@@ -42,7 +42,8 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public String getText(String key) {
-        ResponseBytes<GetObjectResponse> bytes = s3Client.getObjectAsBytes(GetObjectRequest.builder().bucket(bucketName).key(key).build());
+        String normalizedKey = normalizeKey(key);
+        ResponseBytes<GetObjectResponse> bytes = s3Client.getObjectAsBytes(GetObjectRequest.builder().bucket(bucketName).key(normalizedKey).build());
         return bytes.asString(StandardCharsets.UTF_8);
     }
 
@@ -76,10 +77,16 @@ public class S3ServiceImpl implements S3Service {
     }
 
     private String normalizeKey(String key) {
-        String prefix = seaweedfsEndpoint + "/" + bucketName + "/";
-        if (key != null && key.startsWith(prefix)) {
-            return key.substring(prefix.length());
+        if (key == null) return key;
+
+        if (key.startsWith("http://") || key.startsWith("https://")) {
+            String marker = "/" + bucketName + "/";
+            int idx = key.indexOf(marker);
+            if (idx != -1) {
+                return key.substring(idx + marker.length());
+            }
         }
+
         return key;
     }
 }
