@@ -36,3 +36,9 @@ out/
 ### VS Code ###
 .vscode/
 .env
+
+### Claude Code ###
+.claude/
+.agents/
+skills-lock.json
+data/

@@ -21,6 +21,8 @@ public class Judge0ClientServiceImpl implements Judge0ClientService {
                 .source_code(encode(request.getSource_code()))
                 .stdin(encode(request.getStdin()))
                 .language_id(request.getLanguage_id())
+                .command_line_arguments(request.getCommand_line_arguments())
+                .additional_files(request.getAdditional_files())
                 .cpu_time_limit(request.getCpu_time_limit())
                 .wall_time_limit(request.getWall_time_limit())
                 .memory_limit(request.getMemory_limit())
