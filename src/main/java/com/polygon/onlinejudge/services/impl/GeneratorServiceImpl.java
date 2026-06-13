@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -245,7 +246,12 @@ public class GeneratorServiceImpl implements GeneratorService {
                 .orElseThrow(() -> new IllegalArgumentException("Version not found: " + versionId));
     }
 
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]{1,64}$");
+
     private String buildGeneratorKey(ProblemVersion version, String name) {
+        if (name == null || !NAME_PATTERN.matcher(name).matches()) {
+            throw new IllegalArgumentException("Invalid generator name: must match ^[A-Za-z0-9_-]{1,64}$");
+        }
         return String.format("problems/%s/versions/%s/generators/%s.cpp",
                 version.getProblem().getId(), version.getId(), name);
     }
