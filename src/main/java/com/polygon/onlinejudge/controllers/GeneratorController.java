@@ -41,18 +41,6 @@ public class GeneratorController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/versions/{versionId}/script")
-    public ResponseEntity<GeneratorScriptResponse> getScript(@PathVariable UUID versionId) {
-        return ResponseEntity.ok(generatorService.getScript(versionId));
-    }
-
-    @PutMapping("/versions/{versionId}/script")
-    public ResponseEntity<GeneratorScriptResponse> saveScript(
-            @PathVariable UUID versionId,
-            @RequestBody GeneratorScriptRequest request) {
-        return ResponseEntity.ok(generatorService.saveScript(versionId, request));
-    }
-
     @PostMapping("/versions/{versionId}/script/run")
     public ResponseEntity<ScriptRunResponse> runScript(
             @PathVariable UUID versionId,

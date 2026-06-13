@@ -10,7 +10,5 @@ public interface GeneratorService {
     List<GeneratorResponse> getGenerators(UUID versionId);
     GeneratorResponse updateGenerator(UUID generatorId, GeneratorRequest request);
     void deleteGenerator(UUID generatorId);
-    GeneratorScriptResponse getScript(UUID versionId);
-    GeneratorScriptResponse saveScript(UUID versionId, GeneratorScriptRequest request);
     ScriptRunResponse runScript(UUID versionId, ScriptRunRequest request);
 }

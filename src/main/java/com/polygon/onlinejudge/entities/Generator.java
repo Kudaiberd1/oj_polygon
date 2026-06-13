@@ -1,5 +1,6 @@
 package com.polygon.onlinejudge.entities;
 
+import com.polygon.onlinejudge.entities.enums.Language;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -26,6 +27,10 @@ public class Generator {
 
     private String name;
     private String sourceCodeKey;
+
+    @Enumerated(EnumType.STRING)
+    private Language language;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

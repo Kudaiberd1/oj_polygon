@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface GeneratorRepository extends JpaRepository<Generator, UUID> {
-    List<Generator> findAllByVersion_Id(UUID versionId);
+    List<Generator> findAllByVersion_IdOrderByCreatedAtAsc(UUID versionId);
     Optional<Generator> findByVersion_IdAndName(UUID versionId, String name);
     void deleteAllByVersion_Id(UUID versionId);
 }

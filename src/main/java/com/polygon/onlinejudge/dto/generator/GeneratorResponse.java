@@ -13,6 +13,7 @@ public class GeneratorResponse {
     private UUID versionId;
     private String name;
     private String sourceCodeKey;
+    private String language;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
