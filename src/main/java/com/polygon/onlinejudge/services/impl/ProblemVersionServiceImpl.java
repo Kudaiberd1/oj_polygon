@@ -53,6 +53,7 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
     private final TestGroupRepository testGroupRepository;
     private final TestCaseRepository testCaseRepository;
     private final TestCaseMapper testCaseMapper;
+    private final GeneratorRepository generatorRepository;
     private final Judge0ClientService judge0ClientService;
 
     @Lazy
@@ -311,6 +312,31 @@ public class ProblemVersionServiceImpl implements ProblemVersionService {
             }
             testCaseRepository.saveAll(newTestCases);
         }
+
+        // Copy generators
+        List<Generator> generators = generatorRepository.findAllByVersion_IdOrderByCreatedAtAsc(oldVersion.getId());
+        List<Generator> newGenerators = new ArrayList<>();
+        for (Generator gen : generators) {
+            String ext = switch (gen.getLanguage()) {
+                case JAVA -> "java";
+                case CPP -> "cpp";
+                case PY -> "py";
+            };
+            String newKey = String.format("problems/%s/versions/%s/generators/%s.%s",
+                    problemId, newVersionId, gen.getName(), ext);
+            String sourceCode = s3Service.getText(gen.getSourceCodeKey());
+            s3Service.putText(newKey, sourceCode);
+
+            newGenerators.add(Generator.builder()
+                    .version(newVersion)
+                    .name(gen.getName())
+                    .sourceCodeKey(newKey)
+                    .language(gen.getLanguage())
+                    .createdAt(gen.getCreatedAt())
+                    .updatedAt(gen.getUpdatedAt())
+                    .build());
+        }
+        generatorRepository.saveAll(newGenerators);
 
         return newVersion;
     }

@@ -158,7 +158,6 @@ public class ValidationServiceImpl implements ValidationService {
 
         self.clearTestCaseOutputs(problemVersion);
         self.setTestCaseOutput(testOutputs);
-        log.info(testOutputs.toString());
 
         if (!failures.isEmpty()) {
             if(fullFinalize) {
